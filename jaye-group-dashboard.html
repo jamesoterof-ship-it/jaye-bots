@@ -23,6 +23,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nav-btn.on i{color:#000}
 .page{display:none;padding-bottom:90px}
 .page.show{display:block}
+.sticky-top{position:sticky;top:62px;z-index:90}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 16px;background:#fff;border-bottom:0.5px solid var(--border)}
 .stat{background:var(--gold-bg);border:0.5px solid #E8D5A0;border-radius:8px;padding:10px 12px;text-align:center}
 .stat-num{font-size:24px;font-weight:600;color:var(--gold)}
@@ -99,6 +100,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <div class="page show" id="page-bots">
+  <div class="sticky-top">
   <div class="stats">
     <div class="stat"><div class="stat-num" id="s-total">-</div><div class="stat-label">TOTAL</div></div>
     <div class="stat"><div class="stat-num" id="s-active">-</div><div class="stat-label">ACTIVOS</div></div>
@@ -109,6 +111,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="filter-btn" onclick="setF('carlos',this)">Carlos · Chile</button>
     <button class="filter-btn" onclick="setF('ramon',this)">Ramón · Paraguay</button>
     <button class="filter-btn" onclick="setF('paused',this)">Pausados</button>
+  </div>
   </div>
   <div id="cl"></div>
 </div>
@@ -261,7 +264,7 @@ async function toggleBot(){
   const btn=document.getElementById('d-btn');
   btn.className='pbtn loading';btn.textContent='Actualizando...';
   try{
-    await fetch(WH_PAUSAR,{method:'POST',headers:{'Content-Type':'application/json'},mode:'no-cors',body:JSON.stringify({telefono:c.TELEFONO,modo:nm})});
+    await fetch(WH_PAUSAR,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:c.TELEFONO,modo:nm})});
     c.MODO=nm;
     const b=document.getElementById('d-badge');b.className='badge '+bC(c);b.textContent=bT(c);
     updateBtn(c);renderList();
