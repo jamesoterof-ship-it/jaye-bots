@@ -4,34 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Jaye Group · Control de Bots</title>
-<link rel="manifest" href="#" />
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Jaye Bots">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--gold:#C9A853;--gold-dark:#A8832A;--gold-bg:#FDF8EE;--black:#0D0D0D;--border:#E0E0E0;--text:#111;--muted:#888;--msg-bg:#1A1A1A;--msg-surface:#242424}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:var(--text);max-width:480px;margin:0 auto;min-height:100vh}
-
-.header{padding:18px 16px 14px;background:var(--black);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:var(--text);max-width:480px;margin:0 auto;min-height:100vh}
+.header{padding:18px 16px 14px;background:var(--black);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .logo{display:flex;align-items:center}
 .logo-jaye{font-size:21px;font-weight:700;letter-spacing:-0.5px;color:#fff}
 .logo-sep{width:1px;height:22px;background:var(--gold);margin:0 9px}
 .logo-group{font-size:17px;font-weight:300;letter-spacing:2px;color:#fff}
 .logo-sub{font-size:10px;color:var(--gold);letter-spacing:1.5px;margin-top:3px}
 .refresh-btn{background:none;border:none;cursor:pointer;color:var(--gold);font-size:22px;padding:4px}
-
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:0.5px solid var(--border);padding:14px 20px 24px;display:flex;gap:10px;justify-content:center;z-index:100}
+.nav-btn{flex:1;padding:12px 0;border-radius:6px;font-size:12px;font-weight:600;letter-spacing:0.8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--black);color:#fff;border:2px solid var(--gold);transition:all 0.15s}
+.nav-btn i{color:var(--gold);font-size:18px}
+.nav-btn.on{background:var(--gold);color:#000;border-color:var(--gold)}
+.nav-btn.on i{color:#000}
+.page{display:none;padding-bottom:90px}
+.page.show{display:block}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 16px;background:#fff;border-bottom:0.5px solid var(--border)}
 .stat{background:var(--gold-bg);border:0.5px solid #E8D5A0;border-radius:8px;padding:10px 12px;text-align:center}
 .stat-num{font-size:24px;font-weight:600;color:var(--gold)}
 .stat-label{font-size:10px;color:#999;letter-spacing:0.5px;margin-top:2px}
-
 .filters{padding:10px 16px;display:flex;gap:6px;overflow-x:auto;border-bottom:0.5px solid var(--border);background:#fff;-ms-overflow-style:none;scrollbar-width:none}
 .filters::-webkit-scrollbar{display:none}
 .filter-btn{padding:7px 16px;border-radius:20px;font-size:12px;border:0.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.15s}
 .filter-btn.on{background:var(--gold);color:#fff;border-color:var(--gold);font-weight:500}
-
-.conv{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;background:#fff;transition:background 0.1s;-webkit-user-select:none;user-select:none}
+.conv{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;background:#fff;transition:background 0.1s}
 .conv:active{background:#f5f5f5}
 .av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex-shrink:0}
 .av-gold{background:var(--gold-bg);color:var(--gold-dark);border:1px solid #E8D5A0}
@@ -44,54 +47,59 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cmeta{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
 .ct{font-size:11px;color:var(--muted)}
 .badge{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:500}
-.b-active{background:#EAF4EA;color:#2D7A3A;border:0.5px solid #B5D9B5}
 .b-paused{background:#F2F2F2;color:var(--muted);border:0.5px solid var(--border)}
 .b-pedido{background:#EAF2FB;color:#1A5FA0;border:0.5px solid #B5CFF0}
 .b-carlos{background:var(--gold-bg);color:var(--gold-dark);border:0.5px solid #E8D5A0}
 .b-ramon{background:#F3EEF9;color:#7C4BAF;border:0.5px solid #D9C8EF}
-
-.detail{display:none;flex-direction:column;min-height:100vh}
+.detail{display:none;flex-direction:column;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:100vh;z-index:200;background:#fff}
 .detail.show{display:flex}
-.dh{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;background:#fff;position:sticky;top:0;z-index:10}
+.dh{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;background:#fff}
 .back{background:none;border:none;cursor:pointer;color:var(--gold);font-size:22px;display:flex;align-items:center;padding:4px}
 .dn{font-size:15px;font-weight:600;color:var(--text)}
 .dp{font-size:11px;color:var(--muted);margin-top:1px}
-.msgs{padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--msg-bg);flex:1;min-height:200px}
+.msgs{padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--msg-bg);flex:1;overflow-y:auto}
 .msg{max-width:82%;padding:10px 14px;font-size:14px;line-height:1.5}
 .msg-in{background:var(--msg-surface);color:#F0F0F0;align-self:flex-start;border-radius:0 14px 14px 14px}
 .msg-out{background:#1E1800;color:#E2C97E;align-self:flex-end;border-radius:14px 14px 0 14px;border:0.5px solid #3A2E00}
 .mt{font-size:10px;color:#555;margin-top:4px}
 .no-msgs{padding:24px;text-align:center;color:#555;font-size:13px}
-
 .abar{padding:16px;border-top:0.5px solid var(--border);background:#fff}
 .pbtn{width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;border:0.5px solid;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .pbtn.active{background:#FEF0F0;color:#C0392B;border-color:#F0BABA}
-.pbtn.active:active{background:#FDDADA}
 .pbtn.paused{background:#EAF4EA;color:#2D7A3A;border-color:#B5D9B5}
-.pbtn.paused:active{background:#D4EDD4}
 .pbtn.pedido{background:#F7F7F7;color:var(--muted);border-color:var(--border);cursor:not-allowed}
 .pbtn.loading{opacity:0.6;cursor:not-allowed}
 .pnote{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
-
-.loading-screen{padding:40px 16px;text-align:center;color:var(--muted)}
+.ventas-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:14px 16px;background:#fff;border-bottom:0.5px solid var(--border)}
+.vcard{background:#fff;border:0.5px solid var(--border);border-radius:10px;margin:0 16px 10px;padding:14px}
+.vcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.vcard-name{font-size:14px;font-weight:600;color:var(--text)}
+.vcard-monto{font-size:15px;font-weight:600;color:var(--gold-dark)}
+.vcard-info{font-size:12px;color:var(--muted);margin-top:2px}
+.vcard-bot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border)}
+.vcard-fecha{font-size:11px;color:var(--muted)}
+.b-pend{background:#FEF0F0;color:#C0392B;border:0.5px solid #F0BABA;font-size:10px;padding:3px 8px;border-radius:10px}
+.b-comp{background:#EAF4EA;color:#2D7A3A;border:0.5px solid #B5D9B5;font-size:10px;padding:3px 8px;border-radius:10px}
+.ventas-list{padding-top:10px}
+.loading-screen{padding:40px 16px;text-align:center;color:var(--muted);background:#fff}
 .spinner{width:32px;height:32px;border:2px solid #E8D5A0;border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.error-screen{padding:24px 16px;text-align:center}
+.error-screen{padding:24px 16px;text-align:center;background:#fff}
 .error-msg{color:#C0392B;font-size:14px;margin-bottom:12px}
 .retry-btn{padding:10px 20px;border-radius:8px;border:0.5px solid var(--gold);background:var(--gold-bg);color:var(--gold-dark);cursor:pointer;font-size:14px}
-.empty{padding:32px 16px;text-align:center;color:var(--muted);font-size:13px}
+.empty{padding:32px 16px;text-align:center;color:var(--muted);font-size:13px;background:#fff}
+.ventas-empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
-
-<div id="lv">
-  <div class="header">
-    <div>
-      <div class="logo"><span class="logo-jaye">JAYE</span><div class="logo-sep"></div><span class="logo-group">GROUP</span></div>
-      <div class="logo-sub">CONTROL DE BOTS</div>
-    </div>
-    <button class="refresh-btn" onclick="loadData()" aria-label="Actualizar">↻</button>
+<div class="header">
+  <div>
+    <div class="logo"><span class="logo-jaye">JAYE</span><div class="logo-sep"></div><span class="logo-group">GROUP</span></div>
+    <div class="logo-sub" id="page-sub">CONTROL DE BOTS</div>
   </div>
+  <button class="refresh-btn" onclick="refreshCurrent()">&#x21BB;</button>
+</div>
+<div class="page show" id="page-bots">
   <div class="stats">
     <div class="stat"><div class="stat-num" id="s-total">-</div><div class="stat-label">TOTAL</div></div>
     <div class="stat"><div class="stat-num" id="s-active">-</div><div class="stat-label">ACTIVOS</div></div>
@@ -105,10 +113,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
   <div id="cl"></div>
 </div>
-
+<div class="page" id="page-ventas">
+  <div class="ventas-stats">
+    <div class="stat"><div class="stat-num" id="v-total">-</div><div class="stat-label">VENTAS HOY</div></div>
+    <div class="stat"><div class="stat-num" id="v-monto">-</div><div class="stat-label">TOTAL HOY</div></div>
+  </div>
+  <div class="filters">
+    <button class="filter-btn on" onclick="setVF('all',this)">Todas</button>
+    <button class="filter-btn" onclick="setVF('chile',this)">Chile</button>
+    <button class="filter-btn" onclick="setVF('paraguay',this)">Paraguay</button>
+    <button class="filter-btn" onclick="setVF('pendiente',this)">Pendientes</button>
+  </div>
+  <div class="ventas-list" id="vl"></div>
+</div>
 <div class="detail" id="dv">
   <div class="dh">
-    <button class="back" onclick="goBack()" aria-label="Volver">←</button>
+    <button class="back" onclick="goBack()">&#8592;</button>
     <div style="flex:1">
       <div class="dn" id="d-name"></div>
       <div class="dp" id="d-phone"></div>
@@ -121,173 +141,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="pnote" id="d-note"></div>
   </div>
 </div>
-
+<div class="bottom-nav">
+  <button class="nav-btn on" id="nav-bots" onclick="showPage('bots')">
+    <i class="ti ti-message-circle"></i> BOTS
+  </button>
+  <button class="nav-btn" id="nav-ventas" onclick="showPage('ventas')">
+    <i class="ti ti-chart-bar"></i> VENTAS
+  </button>
+</div>
 <script>
-const WEBHOOK_LEER = 'https://n8n-production-8a42.up.railway.app/webhook/leer-conversaciones';
-const WEBHOOK_PAUSAR = 'https://n8n-production-8a42.up.railway.app/webhook/pausar-activar';
-
-let contacts = [];
-let filt = 'all';
-let sel = null;
-
-function initials(name) {
-  if (!name) return '?';
-  return name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
-}
-
-function avatarClass(bot) {
-  if (bot === 'carlos') return 'av-gold';
-  if (bot === 'ramon') return 'av-purple';
-  return 'av-gray';
-}
-
-function badgeClass(c) {
-  if (c.TIPO === 'pedido') return 'b-pedido';
-  if (c.MODO === 'agente') return 'b-paused';
-  if (c.BOT === 'ramon') return 'b-ramon';
-  return 'b-carlos';
-}
-
-function badgeText(c) {
-  if (c.TIPO === 'pedido') return 'pedido web';
-  if (c.MODO === 'agente') return 'pausado';
-  if (c.BOT === 'ramon') return 'Ramón · PY';
-  return 'Carlos · CL';
-}
-
-function stats() {
-  const leads = contacts.filter(c => c.TIPO !== 'pedido');
-  document.getElementById('s-total').textContent = leads.length;
-  document.getElementById('s-active').textContent = leads.filter(c => c.MODO !== 'agente').length;
-  document.getElementById('s-paused').textContent = leads.filter(c => c.MODO === 'agente').length;
-}
-
-function filtered() {
-  return contacts.filter(c => {
-    if (filt === 'carlos') return (c.BOT||'').toLowerCase() === 'carlos';
-    if (filt === 'ramon') return (c.BOT||'').toLowerCase() === 'ramon';
-    if (filt === 'paused') return c.MODO === 'agente';
-    return true;
-  });
-}
-
-function renderList() {
-  stats();
-  const f = filtered();
-  const el = document.getElementById('cl');
-  if (!f.length) {
-    el.innerHTML = '<div class="empty">Sin conversaciones</div>';
-    return;
-  }
-  el.innerHTML = f.map(c => `
-    <div class="conv" onclick="openConv('${c.TELEFONO}')">
-      <div class="av ${avatarClass((c.BOT||'').toLowerCase())}">${initials(c.NOMBRE)}</div>
-      <div class="ci">
-        <div class="cn">${c.NOMBRE || 'Sin nombre'}</div>
-        <div class="cp">+${c.TELEFONO}</div>
-        <div class="cm">${c.ULTIMO_MENSAJE || 'Sin mensajes'}</div>
-      </div>
-      <div class="cmeta">
-        <span class="ct">${c.HORA || ''}</span>
-        <span class="badge ${badgeClass(c)}">${badgeText(c)}</span>
-      </div>
-    </div>`).join('');
-}
-
-function openConv(tel) {
-  sel = tel;
-  const c = contacts.find(x => x.TELEFONO === tel);
-  if (!c) return;
-  document.getElementById('d-name').textContent = c.NOMBRE || 'Sin nombre';
-  document.getElementById('d-phone').textContent = '+' + c.TELEFONO + ' · ' + (c.BOT === 'carlos' ? 'Carlos · Chile' : c.BOT === 'ramon' ? 'Ramón · Paraguay' : 'Sistema');
-  const b = document.getElementById('d-badge');
-  b.className = 'badge ' + badgeClass(c);
-  b.textContent = badgeText(c);
-  const msgs = document.getElementById('d-msgs');
-  if (c.ULTIMO_MENSAJE) {
-    msgs.innerHTML = `<div><div class="msg msg-in">${c.ULTIMO_MENSAJE}</div><div class="mt">${c.HORA || ''}</div></div>`;
-  } else {
-    msgs.innerHTML = '<div class="no-msgs">Sin mensajes registrados</div>';
-  }
-  updateBtn(c);
-  document.getElementById('lv').style.display = 'none';
-  const dv = document.getElementById('dv');
-  dv.style.display = 'flex';
-  dv.classList.add('show');
-}
-
-function updateBtn(c) {
-  const btn = document.getElementById('d-btn');
-  const note = document.getElementById('d-note');
-  if (c.TIPO === 'pedido') {
-    btn.className = 'pbtn pedido';
-    btn.textContent = '🔒 Conversación de pedido — sin bot';
-    note.textContent = 'Esta conversación es automática';
-  } else if (c.MODO === 'agente') {
-    btn.className = 'pbtn paused';
-    btn.textContent = '▶ Activar bot';
-    note.textContent = 'El bot retomará la conversación automáticamente';
-  } else {
-    btn.className = 'pbtn active';
-    btn.textContent = '⏸ Pausar bot';
-    note.textContent = 'Toma el control y responde manualmente por WhatsApp';
-  }
-}
-
-async function toggleBot() {
-  const c = contacts.find(x => x.TELEFONO === sel);
-  if (!c || c.TIPO === 'pedido') return;
-  const newMode = c.MODO === 'agente' ? 'bot' : 'agente';
-  const btn = document.getElementById('d-btn');
-  btn.className = 'pbtn loading';
-  btn.textContent = 'Actualizando...';
-  try {
-    await fetch(WEBHOOK_PAUSAR, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({telefono: c.TELEFONO, modo: newMode})
-    });
-    c.MODO = newMode;
-    const b = document.getElementById('d-badge');
-    b.className = 'badge ' + badgeClass(c);
-    b.textContent = badgeText(c);
-    updateBtn(c);
-    renderList();
-  } catch(e) {
-    btn.textContent = 'Error — intenta de nuevo';
-    setTimeout(() => updateBtn(c), 2000);
-  }
-}
-
-function goBack() {
-  document.getElementById('dv').style.display = 'none';
-  document.getElementById('dv').classList.remove('show');
-  document.getElementById('lv').style.display = 'block';
-  sel = null;
-}
-
-function setF(f, el) {
-  filt = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
-  renderList();
-}
-
-async function loadData() {
-  const cl = document.getElementById('cl');
-  cl.innerHTML = '<div class="loading-screen"><div class="spinner"></div><div>Cargando conversaciones...</div></div>';
-  try {
-    const res = await fetch(WEBHOOK_LEER);
-    const data = await res.json();
-    contacts = Array.isArray(data) ? data.map(d => d.json || d) : [];
-    renderList();
-  } catch(e) {
-    cl.innerHTML = `<div class="error-screen"><div class="error-msg">Error al cargar datos</div><button class="retry-btn" onclick="loadData()">Reintentar</button></div>`;
-  }
-}
-
+const WH_LEER='https://n8n-production-8a42.up.railway.app/webhook/leer-conversaciones';
+const WH_PAUSAR='https://n8n-production-8a42.up.railway.app/webhook/pausar-activar';
+const WH_VCL='https://n8n-production-8a42.up.railway.app/webhook/leer-ventas-chile';
+const WH_VPY='https://n8n-production-8a42.up.railway.app/webhook/leer-ventas-paraguay';
+let contacts=[],ventas=[],filt='all',vfilt='all',sel=null,curPage='bots';
+function showPage(p){curPage=p;document.querySelectorAll('.page').forEach(x=>x.classList.remove('show'));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('on'));document.getElementById('page-'+p).classList.add('show');document.getElementById('nav-'+p).classList.add('on');document.getElementById('page-sub').textContent=p==='bots'?'CONTROL DE BOTS':'VENTAS';if(p==='ventas')loadVentas();}
+function refreshCurrent(){if(curPage==='bots')loadData();else loadVentas();}
+function ini(n){if(!n)return'?';return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+function avC(b){if((b||'').toLowerCase()==='carlos')return'av-gold';if((b||'').toLowerCase()==='ramon')return'av-purple';return'av-gray';}
+function bC(c){if(c.TIPO==='pedido')return'b-pedido';if(c.MODO==='agente')return'b-paused';if((c.BOT||'').toLowerCase()==='ramon')return'b-ramon';return'b-carlos';}
+function bT(c){if(c.TIPO==='pedido')return'pedido web';if(c.MODO==='agente')return'pausado';if((c.BOT||'').toLowerCase()==='ramon')return'Ramón · PY';return'Carlos · CL';}
+function stats(){const l=contacts.filter(c=>c.TIPO!=='pedido');document.getElementById('s-total').textContent=l.length;document.getElementById('s-active').textContent=l.filter(c=>c.MODO!=='agente').length;document.getElementById('s-paused').textContent=l.filter(c=>c.MODO==='agente').length;}
+function filtered(){return contacts.filter(c=>{if(filt==='carlos')return(c.BOT||'').toLowerCase()==='carlos';if(filt==='ramon')return(c.BOT||'').toLowerCase()==='ramon';if(filt==='paused')return c.MODO==='agente';return true;});}
+function renderList(){stats();const f=filtered();const el=document.getElementById('cl');if(!f.length){el.innerHTML='<div class="empty">Sin conversaciones</div>';return;}el.innerHTML=f.map(c=>`<div class="conv" onclick="openConv('${c.TELEFONO}')"><div class="av ${avC(c.BOT)}">${ini(c.NOMBRE)}</div><div class="ci"><div class="cn">${c.NOMBRE||'Sin nombre'}</div><div class="cp">+${c.TELEFONO}</div><div class="cm">${c.ULTIMO_MENSAJE||'Sin mensajes'}</div></div><div class="cmeta"><span class="ct">${c.HORA||''}</span><span class="badge ${bC(c)}">${bT(c)}</span></div></div>`).join('');}
+function openConv(tel){sel=tel;const c=contacts.find(x=>x.TELEFONO===tel);if(!c)return;document.getElementById('d-name').textContent=c.NOMBRE||'Sin nombre';document.getElementById('d-phone').textContent='+'+(c.TELEFONO||'')+' · '+((c.BOT||'').toLowerCase()==='carlos'?'Carlos · Chile':(c.BOT||'').toLowerCase()==='ramon'?'Ramón · Paraguay':'Sistema');const b=document.getElementById('d-badge');b.className='badge '+bC(c);b.textContent=bT(c);const msgs=document.getElementById('d-msgs');msgs.innerHTML=c.ULTIMO_MENSAJE?`<div><div class="msg msg-in">${c.ULTIMO_MENSAJE}</div><div class="mt">${c.HORA||''}</div></div>`:'<div class="no-msgs">Sin mensajes registrados</div>';updateBtn(c);document.getElementById('dv').classList.add('show');}
+function updateBtn(c){const btn=document.getElementById('d-btn');const note=document.getElementById('d-note');if(c.TIPO==='pedido'){btn.className='pbtn pedido';btn.textContent='Conversación de pedido automática';note.textContent='El bot no interviene en pedidos web';}else if(c.MODO==='agente'){btn.className='pbtn paused';btn.textContent='▶ Activar bot';note.textContent='El bot retomará la conversación automáticamente';}else{btn.className='pbtn active';btn.textContent='⏸ Pausar bot';note.textContent='Toma el control y responde manualmente por WhatsApp';}}
+async function toggleBot(){const c=contacts.find(x=>x.TELEFONO===sel);if(!c||c.TIPO==='pedido')return;const nm=c.MODO==='agente'?'bot':'agente';const btn=document.getElementById('d-btn');btn.className='pbtn loading';btn.textContent='Actualizando...';try{await fetch(WH_PAUSAR,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:c.TELEFONO,modo:nm})});c.MODO=nm;const b=document.getElementById('d-badge');b.className='badge '+bC(c);b.textContent=bT(c);updateBtn(c);renderList();}catch(e){btn.textContent='Error — intenta de nuevo';setTimeout(()=>updateBtn(c),2000);}}
+function goBack(){document.getElementById('dv').classList.remove('show');sel=null;}
+function setF(f,el){filt=f;document.querySelectorAll('#page-bots .filter-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderList();}
+function setVF(f,el){vfilt=f;document.querySelectorAll('#page-ventas .filter-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderVentas();}
+async function loadData(){const cl=document.getElementById('cl');cl.innerHTML='<div class="loading-screen"><div class="spinner"></div><div>Cargando...</div></div>';try{const res=await fetch(WH_LEER);const data=await res.json();contacts=Array.isArray(data)?data.map(d=>d.json||d):[];renderList();}catch(e){cl.innerHTML='<div class="error-screen"><div class="error-msg">Error al cargar datos</div><button class="retry-btn" onclick="loadData()">Reintentar</button></div>';}}
+async function loadVentas(){const vl=document.getElementById('vl');vl.innerHTML='<div class="loading-screen"><div class="spinner"></div><div>Cargando ventas...</div></div>';try{const [rCL,rPY]=await Promise.all([fetch(WH_VCL).catch(()=>({json:()=>[]})),fetch(WH_VPY).catch(()=>({json:()=>[]}))]);const dCL=await rCL.json().catch(()=>[]);const dPY=await rPY.json().catch(()=>[]);const cl=Array.isArray(dCL)?dCL.map(d=>({...(d.json||d),pais:'chile'})):[];const py=Array.isArray(dPY)?dPY.map(d=>({...(d.json||d),pais:'paraguay'})):[];ventas=[...cl,...py];renderVentas();}catch(e){vl.innerHTML='<div class="error-screen"><div class="error-msg">Error al cargar ventas</div><button class="retry-btn" onclick="loadVentas()">Reintentar</button></div>';}}
+function renderVentas(){const f=ventas.filter(v=>{if(vfilt==='chile')return v.pais==='chile';if(vfilt==='paraguay')return v.pais==='paraguay';if(vfilt==='pendiente')return(v.ESTADO||'').toLowerCase()==='pendiente';return true;});document.getElementById('v-total').textContent=f.length;const tot=f.reduce((s,v)=>s+(parseFloat(v.MONTO)||0),0);document.getElementById('v-monto').textContent=tot>0?'$'+tot.toLocaleString():'-';const vl=document.getElementById('vl');if(!f.length){vl.innerHTML='<div class="ventas-empty">Sin ventas registradas</div>';return;}vl.innerHTML=f.map(v=>`<div class="vcard"><div class="vcard-top"><div><div class="vcard-name">${v.NOMBRE||'Sin nombre'}</div><div class="vcard-info">+${v.TELEFONO||''} · ${v.pais==='chile'?'🇨🇱 Chile':'🇵🇾 Paraguay'}</div></div><div class="vcard-monto">${v.MONTO?'$'+parseFloat(v.MONTO).toLocaleString():'-'}</div></div><div class="vcard-info">${v.PRODUCTO||''} ${v.CANTIDAD?'× '+v.CANTIDAD:''}</div><div class="vcard-info" style="margin-top:4px">${v.pais==='chile'?(v.COMUNA?v.COMUNA+', ':'')+(v.REGION||''):(v.CIUDAD?v.CIUDAD+', ':'')+(v.DEPARTAMENTO||'')}</div><div class="vcard-bot"><span class="vcard-fecha">${v.FECHA||''} · ${v.BOT||''}</span><span class="${(v.ESTADO||'').toLowerCase()==='completado'?'b-comp':'b-pend'}">${v.ESTADO||'pendiente'}</span></div></div>`).join('');}
 loadData();
-setInterval(loadData, 30000);
+setInterval(loadData,30000);
 </script>
 </body>
 </html>
