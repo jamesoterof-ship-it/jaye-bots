@@ -1,0 +1,20 @@
+{
+  "name": "Jaye Group Bots",
+  "short_name": "Jaye Bots",
+  "start_url": "/jaye-bots/jaye-group-dashboard.html",
+  "display": "standalone",
+  "background_color": "#0D0D0D",
+  "theme_color": "#C9A853",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/0D0D0D/C9A853?text=JG",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/0D0D0D/C9A853?text=JG",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
