@@ -1,12 +1,11 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Jaye Group — Control de Bots</title>
+Control de Bots</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0c0f">
 <style>
   :root{
     --bg:#0a0c0f; --bg2:#111419; --card:#13171d; --card2:#171c23;
@@ -562,11 +561,10 @@
   function numero(x){ return parseInt(String(x||'').replace(/[^0-9]/g,''))||0; }
   function esHoy(fecha){
     if(!fecha) return false;
-    const f=String(fecha);
     const hoy=new Date();
-    const dd=String(hoy.getDate()).padStart(2,'0');
-    const mm=String(hoy.getMonth()+1).padStart(2,'0');
-    return f.includes(`${dd}/${mm}`) || f.includes(`${dd}-${mm}`);
+    const p=String(fecha).split(',')[0].trim().split(/[\/\-]/);
+    if(p.length>=3){ return parseInt(p[0])===hoy.getDate() && parseInt(p[1])===(hoy.getMonth()+1) && parseInt(p[2])===hoy.getFullYear(); }
+    return false;
   }
   // ¿la fecha es del MES y AÑO actuales? (formato "29/5/2026, ...")
   function esMes(fecha){
@@ -587,10 +585,10 @@
       const cl=[], py=[];
       rows.forEach(r=>{
         if(!r || (!r.NOMBRE && !r.PRODUCTO)) return;
-        const bot=String(r.BOT||'').toLowerCase();
+        const bot=String(r.BOT||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
         const precio=numero(r.PRECIO);
         const item={n:r.NOMBRE||'—', p:`${r.PRODUCTO||''}${r.COMUNA||r.CIUDAD?(' · '+(r.COMUNA||r.CIUDAD)):''}`, price:0, raw:precio, d:r.FECHA||'', fecha:r.FECHA||''};
-        if(bot==='ramon'){ item.price=fmtGS(precio); py.push(item); }
+        if(bot.includes('ramon')){ item.price=fmtGS(precio); py.push(item); }
         else { item.price=fmtCLP(precio); cl.push(item); }
       });
 
@@ -681,10 +679,11 @@
       for(let dd=1;dd<=diasMes;dd++){
         const vcl=dCL[dd]||0, vpy=dPY[dd]||0, tot=vcl+vpy;
         const lbl=(dd===1||dd===diasMes||dd%5===0)?dd:'';
-        const hcl=tot>0?(vcl/mx*100):0;
-        const hpy=tot>0?(vpy/mx*100):0;
+        const H=96; // alto máximo de barra en px
+        const hcl=tot>0?Math.max(vcl/mx*H,vcl>0?3:0):0;
+        const hpy=tot>0?Math.max(vpy/mx*H,vpy>0?3:0):0;
         const empty=tot===0?'<div class="seg" style="height:3px;background:var(--line)"></div>':
-          `<div class="seg" style="height:${hpy}%;background:#fb7185"></div><div class="seg" style="height:${hcl}%;background:#2dd4bf"></div>`;
+          `<div class="seg" style="height:${hpy}px;background:#fb7185"></div><div class="seg" style="height:${hcl}px;background:#2dd4bf"></div>`;
         html+=`<div class="bar" title="Día ${dd}: Carlos ${fmtCLP(vcl)} · Ramón ${fmtGS(vpy)}"><div class="stack">${empty}</div><div class="bl">${lbl}</div></div>`;
       }
       barsEl.innerHTML=html;
