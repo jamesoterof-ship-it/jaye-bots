@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Jaye Group — Control de Bots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0c0f">
+<style>
+  :root{
+    --bg:#0a0c0f; --bg2:#111419; --card:#13171d; --card2:#171c23;
+    --line:#222933; --txt:#f3f5f7; --muted:#8a93a0;
+    --gold:#e0a93b; --gold-soft:rgba(224,169,59,.14);
+    --green:#2ecc71; --green-soft:rgba(46,204,113,.14);
+    --red:#ff5a5f; --red-soft:rgba(255,90,95,.14); --blue:#4aa8ff;
+    --appw:430px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{
+    font-family:'Figtree',sans-serif;background:var(--bg);color:var(--txt);
+    display:flex;justify-content:center;align-items:stretch;
+  }
+  h1,h2,h3,.brand{font-family:'Figtree',sans-serif}
+
+  /* ===== APP SHELL ===== */
+  .app{
+    width:100%;max-width:100%;
+    height:100vh;height:100dvh;
+    display:flex;flex-direction:column;position:relative;
+    background:var(--bg);overflow:hidden;
+  }
+  .app::before{content:'';position:absolute;top:0;left:0;right:0;height:300px;
+    background:radial-gradient(120% 80% at 50% 0%, rgba(224,169,59,.10), transparent 70%);
+    pointer-events:none;z-index:0}
+
+  /* Header fijo */
+  .header{flex-shrink:0;position:relative;z-index:5;padding:18px 18px 0}
+  .top{display:flex;align-items:center;justify-content:space-between;position:relative}
+  .brand{font-size:21px;font-weight:600;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+  .brand i{color:var(--gold);font-style:normal}
+  .brand small{font-weight:500;font-size:12px;color:var(--muted);letter-spacing:2px}
+  .iconbtn{width:42px;height:42px;border-radius:13px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--txt);font-size:18px;position:relative;cursor:pointer}
+  .bell{position:relative;z-index:2}
+  .bdots{position:absolute;top:-7px;right:-7px;display:flex;gap:3px}
+  .bdot{font-size:10px;font-weight:500;min-width:17px;height:17px;border-radius:9px;display:grid;place-items:center;padding:0 4px;border:2px solid var(--bg)}
+  .bdot.g{background:var(--green);color:#06210f}
+  .bdot.r{background:var(--red);color:#2a0608}
+
+  /* Zona de scroll */
+  .scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;z-index:1;-webkit-overflow-scrolling:touch;padding:0 18px 18px}
+  .scroll::-webkit-scrollbar{width:0}
+
+  /* Sub-header fijo dentro de cada pantalla (título + controles) */
+  .fixhead{flex-shrink:0;position:relative;z-index:4;padding:0 18px;background:var(--bg)}
+  .pagehead{padding:12px 2px 12px}
+  .pagehead h1{font-size:20px;font-weight:500;letter-spacing:-.3px}
+  .pagehead p{color:var(--muted);font-size:12.5px;margin-top:2px;font-weight:400}
+
+  /* Nav fijo abajo */
+  .nav{flex-shrink:0;position:relative;z-index:5;background:rgba(13,16,20,.96);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 6px calc(12px + env(safe-area-inset-bottom))}
+  .navit{background:none;border:none;color:var(--muted);font-family:inherit;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1;padding:5px 0}
+  .navit svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9}
+  .navit.on{color:var(--gold)}
+  .navit.on .nicon{background:var(--gold-soft)}
+  .nicon{width:42px;height:28px;border-radius:11px;display:grid;place-items:center;transition:.2s}
+
+  /* Screens */
+  .screen{display:none;flex-direction:column;flex:1;min-height:0}
+  .screen.active{display:flex;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* Stats compactas */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 9px;display:flex;align-items:center;gap:8px}
+  .stat .ic{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:12px;flex-shrink:0}
+  .stat .num{font-family:'Figtree';font-size:15px;font-weight:600;line-height:1}
+  .stat .lbl{font-size:7.5px;font-weight:500;letter-spacing:.3px;margin-top:2px}
+  .stat.g{border-color:rgba(37,211,102,.25)} .stat.g .ic{background:rgba(37,211,102,.14)} .stat.g .lbl{color:#25D366}
+  .stat.gr .ic{background:var(--green-soft);color:var(--green)} .stat.gr .lbl{color:var(--green)} .stat.gr{border-color:rgba(46,204,113,.25)}
+  .stat.r .ic{background:var(--red-soft);color:var(--red)} .stat.r .lbl{color:var(--red)} .stat.r{border-color:rgba(255,90,95,.25)}
+
+  /* Search + chips */
+  .search{display:flex;gap:10px;margin-bottom:12px}
+  .search input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 15px;color:var(--txt);font-family:inherit;font-size:14px}
+  .search input::placeholder{color:var(--muted)}
+  .search .filt{width:46px;background:var(--card);border:1px solid var(--line);border-radius:14px;display:grid;place-items:center;color:var(--gold);font-size:16px;cursor:pointer}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap;padding:8px 14px;border-radius:30px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
+  .chip.on{background:var(--gold);color:#1a1205;border-color:var(--gold)}
+  .chip .dot{width:7px;height:7px;border-radius:50%}
+  .dot.green{background:var(--green)} .dot.red{background:var(--red)}
+
+  /* Conversation card */
+  .conv{background:var(--card);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px;margin-bottom:11px}
+  .conv .row1{display:flex;gap:12px;align-items:flex-start}
+  .av{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-family:'Figtree';font-weight:500;font-size:16px;border:2px solid var(--gold);color:var(--gold);position:relative;flex-shrink:0;background:var(--bg2)}
+  .av .pres{position:absolute;bottom:0;right:0;width:13px;height:13px;border-radius:50%;border:2.5px solid var(--card)}
+  .pres.green{background:var(--green)} .pres.red{background:var(--red)}
+  .conv .info{flex:1;min-width:0}
+  .conv .name{font-family:'Figtree';font-weight:500;font-size:15.5px}
+  .conv .phone{color:var(--muted);font-size:12px;margin-top:1px}
+  .conv .msg{font-size:13px;color:#c4ccd6;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .conv .meta{text-align:right;flex-shrink:0}
+  .conv .time{font-size:11.5px;color:var(--muted)}
+  .conv .unread{margin-top:6px;background:var(--gold);color:#1a1205;font-size:11px;font-weight:500;min-width:20px;height:20px;border-radius:10px;display:inline-grid;place-items:center;padding:0 6px}
+  .conv .row2{display:flex;align-items:center;gap:8px;margin-top:12px}
+  .tag{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gold);font-weight:600;margin-right:auto}
+  .status{font-size:11px;font-weight:500;padding:5px 10px;border-radius:20px}
+  .status.active{background:var(--green-soft);color:var(--green)}
+  .status.paused{background:var(--red-soft);color:var(--red)}
+  .btn{font-family:inherit;border:none;font-weight:500;font-size:12.5px;padding:9px 12px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+  .btn.pause{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+  .btn.activate{background:transparent;border:1px solid var(--green);color:var(--green)}
+  .btn.ghost{background:var(--card2);border:1px solid var(--line);color:var(--txt)}
+  .conv .acts{display:flex;gap:8px;margin-top:10px}
+  .conv .acts .btn{flex:1}
+
+  /* Ventas */
+  .seltabs{display:flex;gap:9px;margin-bottom:13px}
+  .seltab{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;cursor:pointer}
+  .seltab.on{border-color:var(--gold);background:var(--gold-soft)}
+  .seltab .bn{font-family:'Figtree';font-weight:500;font-size:15px}
+  .seltab .bc{font-size:11px;color:var(--muted);margin-top:2px}
+  .seltab.on .bn{color:var(--gold)}
+  .vsum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+  .vsum .box{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px}
+  .vsum .box .k{font-size:11px;color:var(--muted);font-weight:600}
+  .vsum .box .v{font-family:'Figtree';font-size:21px;font-weight:600;margin-top:5px}
+  .vsum .box .v.gold{color:var(--gold)}
+  .sale{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
+  .sale .sic{width:42px;height:42px;border-radius:12px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-size:17px;flex-shrink:0}
+  .sale .sinfo{flex:1;min-width:0}
+  .sale .sn{font-family:'Figtree';font-weight:500;font-size:14.5px}
+  .sale .sp{font-size:12px;color:var(--muted);margin-top:2px}
+  .sale .sm{text-align:right}
+  .sale .price{font-family:'Figtree';font-weight:600;font-size:15.5px;color:var(--green)}
+  .sale .sd{font-size:11px;color:var(--muted);margin-top:3px}
+
+  /* Reportes */
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px;position:relative}
+  .kpi .kl{font-size:10px;color:var(--muted);font-weight:500}
+  .kpi .kv{font-family:'Figtree';font-size:18px;font-weight:600;margin-top:4px}
+  .kpi .kt{font-size:9.5px;margin-top:3px;color:var(--green);font-weight:500}
+  .kpi.c1 .kv{color:var(--gold)}
+  .kpi.c2 .kv{color:var(--green)}
+  .kpi.c3 .kv{color:#2dd4bf}
+  .kpi.c4 .kv{color:#b07cff}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:16px;margin-bottom:14px}
+  .panel h3{font-size:14.5px;font-weight:500;margin-bottom:3px}
+  .panel .psub{font-size:11.5px;color:var(--muted);margin-bottom:16px}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:130px;padding-top:8px}
+  .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .bar .stack{width:100%;display:flex;flex-direction:column;justify-content:flex-end;border-radius:4px;overflow:hidden;min-height:3px}
+  .bar .seg:first-child{border-radius:4px 4px 0 0}
+  .bar .bl{font-size:9.5px;color:var(--muted)}
+  .leg{display:flex;gap:14px;margin-bottom:10px;font-size:11px;color:var(--muted)}
+  .leg span{display:flex;align-items:center;gap:5px}
+  .leg i{width:10px;height:10px;border-radius:2px;display:inline-block;font-style:normal}
+  .cmp{display:flex;flex-direction:column;gap:14px}
+  .cmprow .ch{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px}
+  .cmprow .ch b{font-weight:500}
+  .track{height:8px;background:var(--bg2);border-radius:5px;overflow:hidden}
+  .track .tf{height:100%;border-radius:5px}
+  .tf.cl{background:#2dd4bf}
+  .tf.py{background:#fb7185}
+
+  /* Bots */
+  .botcard{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:13px}
+  .botcard .bav{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;font-size:23px;flex-shrink:0}
+  .botcard .bi{flex:1}
+  .botcard .bnm{font-family:'Figtree';font-weight:500;font-size:16px}
+  .botcard .bds{font-size:12px;color:var(--muted);margin-top:3px}
+  .toggle{width:48px;height:28px;border-radius:16px;background:var(--green);position:relative;cursor:pointer;flex-shrink:0;transition:.25s}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.25s}
+  .toggle.off{background:var(--line)} .toggle.off::after{left:23px}
+
+  .sectit{font-family:'Figtree';font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:4px 2px 12px}
+
+  /* Ajustes */
+  .setrow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:9px;display:flex;align-items:center;gap:12px}
+  .setrow .si{width:38px;height:38px;border-radius:11px;background:var(--gold-soft);color:var(--gold);display:grid;place-items:center;font-size:16px}
+  .setrow .st{flex:1;font-weight:600;font-size:14px}
+  .setrow .sa{color:var(--muted);font-size:18px}
+
+  /* Panel notificaciones */
+  .noverlay{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:90;display:none;backdrop-filter:blur(2px)}
+  .noverlay.open{display:block}
+  .npanel{position:absolute;top:0;left:0;right:0;background:var(--bg2);border-bottom-left-radius:22px;border-bottom-right-radius:22px;z-index:91;transform:translateY(-110%);transition:transform .32s cubic-bezier(.2,.8,.2,1);max-height:82%;overflow-y:auto;border:1px solid var(--line);padding:18px 16px 24px}
+  .npanel.open{transform:translateY(0)}
+  .nph{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .nph h3{font-family:'Figtree';font-size:18px;font-weight:600}
+  .nph .x{width:32px;height:32px;border-radius:10px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--txt);cursor:pointer}
+  .ngrp{font-family:'Figtree';font-size:11.5px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;margin:14px 2px 9px;display:flex;align-items:center;gap:7px}
+  .ngrp .cnt{font-size:10.5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;display:grid;place-items:center}
+  .ngrp.r{color:var(--red)} .ngrp.r .cnt{background:var(--red-soft)}
+  .ngrp.g{color:var(--green)} .ngrp.g .cnt{background:var(--green-soft)}
+  .noti{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.05);border-radius:0;padding:12px 4px;margin-bottom:0;display:flex;gap:11px;align-items:center;cursor:pointer;border-left:2px solid transparent}
+  .noti.r{border-left-color:rgba(255,90,95,.5)} .noti.g{border-left-color:rgba(46,204,113,.5)}
+  .noti .ni{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+  .noti.r .ni{background:var(--red-soft)} .noti.g .ni{background:var(--green-soft)}
+  .noti .nt{flex:1;min-width:0}
+  .noti .ntt{font-weight:500;font-size:13.5px}
+  .noti .nts{font-size:11.5px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .noti .ntime{font-size:10.5px;color:var(--muted);flex-shrink:0}
+  .noti-del{flex-shrink:0;width:26px;height:26px;border-radius:8px;background:var(--red-soft);color:var(--red);border:none;font-size:12px;cursor:pointer;display:grid;place-items:center;margin-left:4px}
+  .nclear{background:var(--card);border:1px solid var(--line);color:var(--muted);font-family:inherit;font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer}
+  .ksub{font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:600}
+  .v.green2{color:var(--green)}
+  /* Modal ajustes */
+  .amodal{position:absolute;left:18px;right:18px;top:74px;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:18px 16px;z-index:91;display:none;max-height:70%;overflow-y:auto}
+  .amodal.open{display:block}
+  .amodal h3{font-family:'Figtree';font-size:16px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .amodal .x{width:30px;height:30px;border-radius:9px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--txt);cursor:pointer;font-size:13px}
+  .amodal .line{font-size:13px;color:#c4ccd6;padding:9px 0;border-bottom:1px solid var(--line);word-break:break-all}
+  .amodal .line b{color:var(--txt);font-weight:600}
+  .setrow{cursor:pointer}
+
+  /* PC: app centrada con marco (solo computadores grandes) */
+  @media (min-width:1024px){
+    body{background:#06080a;padding:0;align-items:center}
+    .app{width:var(--appw);max-width:430px;height:100dvh;max-height:920px;box-shadow:0 0 0 1px var(--line), 0 30px 80px rgba(0,0,0,.6);border-radius:22px;overflow:hidden}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- HEADER FIJO -->
+  <div class="header">
+    <div class="top">
+      <span style="display:flex;align-items:baseline;gap:5px;position:relative;z-index:2"><span style="font-family:'Figtree',sans-serif;font-weight:600;font-size:18px;letter-spacing:.5px;color:#f3f5f7">JAYE</span><span style="font-family:'Figtree',sans-serif;font-weight:400;font-size:11px;letter-spacing:2px;color:#8a93a0">GROUP</span></span>
+      <h2 id="hdrTitle" style="position:absolute;left:0;right:0;margin:0 auto;width:fit-content;max-width:55%;text-align:center;font-size:17px;font-weight:600;letter-spacing:.3px;pointer-events:none;z-index:1">Control de Bots</h2>
+      <div class="iconbtn bell" onclick="openNoti()">🔔<span class="bdots"><span class="bdot r">2</span><span class="bdot g">5</span></span></div>
+    </div>
+  </div>
+
+  <!-- ===== INICIO ===== -->
+  <section class="screen active" id="inicio">
+    <div class="fixhead">
+      <div class="stats">
+        <div class="stat g"><div class="ic"><svg viewBox="0 0 24 24" width="15" height="15" fill="#25D366"><path d="M17.5 14.4c-.3-.2-1.7-.8-1.9-.9-.3-.1-.5-.2-.6.2-.2.3-.7.9-.8 1-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.8-2.1-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3 0 1.4 1 2.7 1.1 2.9.2.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm0 18.3c-1.5 0-3-.4-4.3-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.3 8.3 0 1 1 12 20.3z"/></svg></div><div><div class="num">65</div><div class="lbl">TOTAL</div></div></div>
+        <div class="stat gr"><div class="ic">▶</div><div><div class="num">62</div><div class="lbl">ACTIVOS</div></div></div>
+        <div class="stat r"><div class="ic">⏸</div><div><div class="num">3</div><div class="lbl">PAUSADOS</div></div></div>
+      </div>
+      <div class="search"><input id="searchInput" placeholder="Buscar conversación..." oninput="buscar(this.value)"><div class="filt">⚙</div></div>
+      <div class="chips">
+        <div class="chip on">Todos</div>
+        <div class="chip">🇨🇱 Carlos</div>
+        <div class="chip">🇵🇾 Ramón</div>
+        <div class="chip"><span class="dot green"></span>Activos</div>
+        <div class="chip"><span class="dot red"></span>Pausados</div>
+      </div>
+    </div>
+    <div class="scroll" id="convlist"></div>
+  </section>
+
+  <!-- ===== VENTAS ===== -->
+  <section class="screen" id="ventas">
+    <div class="fixhead">
+      <div class="seltabs">
+        <div class="seltab on" onclick="selVenta(this,'cl')"><div class="bn">Carlos</div><div class="bc">🇨🇱 Chile</div></div>
+        <div class="seltab" onclick="selVenta(this,'py')"><div class="bn">Ramón</div><div class="bc">🇵🇾 Paraguay</div></div>
+      </div>
+      <div class="vsum">
+        <div class="box"><div class="k">Vendido este mes</div><div class="v gold" id="vTotal">$0</div><div class="ksub" id="vCount">0 pedidos</div></div>
+        <div class="box"><div class="k">Hoy</div><div class="v green2" id="vHoy">$0</div><div class="ksub" id="vCountHoy">0 pedidos</div></div>
+      </div>
+    </div>
+    <div class="scroll"><div class="sectit">Pedidos recientes</div><div id="salelist"></div></div>
+  </section>
+
+  <!-- ===== REPORTES ===== -->
+  <section class="screen" id="reportes">
+    <div class="scroll">
+      <div class="kpis">
+        <div class="kpi c1"><div class="kl">Total del mes</div><div class="kv">$0</div><div class="kt">este mes</div></div>
+        <div class="kpi c2"><div class="kl">Ventas hoy</div><div class="kv">$0</div><div class="kt">↑ 0 pedidos hoy</div></div>
+        <div class="kpi c3"><div class="kl">Ticket promedio</div><div class="kv">$0</div><div class="kt" style="color:var(--muted)">por pedido</div></div>
+        <div class="kpi c4"><div class="kl">Pedidos mes</div><div class="kv">0</div><div class="kt">0 pedidos total</div></div>
+      </div>
+      <div class="panel">
+        <h3>Ventas del mes</h3><div class="psub">Por día — Mayo 2026</div>
+        <div class="leg"><span><i style="background:#2dd4bf"></i>Carlos</span><span><i style="background:#fb7185"></i>Ramón</span></div>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="panel">
+        <h3>Comparativa por bot</h3><div class="psub">Cuánto vendió cada uno este mes</div>
+        <div class="cmp">
+          <div class="cmprow"><div class="ch"><span>🇨🇱 Carlos</span><b>$1.56M</b></div><div class="track"><div class="tf cl" style="width:65%"></div></div></div>
+          <div class="cmprow"><div class="ch"><span>🇵🇾 Ramón</span><b>$842K</b></div><div class="track"><div class="tf py" style="width:35%"></div></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Productos más vendidos</h3><div class="psub">Top del mes</div>
+        <div class="cmp">
+          <div class="cmprow"><div class="ch"><span>Shilajit Ultra</span><b>48</b></div><div class="track"><div class="tf cl" style="width:80%"></div></div></div>
+          <div class="cmprow"><div class="ch"><span>Wild Tornado</span><b>35</b></div><div class="track"><div class="tf cl" style="width:58%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BOTS ===== -->
+  <section class="screen" id="bots">
+    <div class="scroll">
+      <div class="sectit">Activos</div>
+      <div class="botcard">
+        <div class="bav" style="background:var(--gold-soft)">🤖</div>
+        <div class="bi"><div class="bnm">Carlos</div><div class="bds">🇨🇱 Chile · 42 conversaciones hoy</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="botcard">
+        <div class="bav" style="background:rgba(74,168,255,.14)">🤖</div>
+        <div class="bi"><div class="bnm">Ramón</div><div class="bds">🇵🇾 Paraguay · 23 conversaciones hoy</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="sectit" style="margin-top:18px">Añadir país</div>
+      <div class="botcard" style="border-style:dashed;justify-content:center;color:var(--muted)">
+        <span style="font-size:21px">＋</span><span style="font-weight:600">Configurar nuevo bot / país</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AJUSTES ===== -->
+  <section class="screen" id="ajustes">
+    <div class="scroll">
+      <div class="setrow" onclick="openNoti()"><div class="si">🔔</div><div class="st">Notificaciones</div><div class="sa">›</div></div>
+      <div class="setrow" onclick="verAjuste('idioma')"><div class="si">🌐</div><div class="st">Idioma y zona horaria</div><div class="sa">›</div></div>
+      <div class="setrow" onclick="verAjuste('n8n')"><div class="si">🔗</div><div class="st">Conexiones n8n</div><div class="sa">›</div></div>
+      <div class="setrow" onclick="abrirHojas()"><div class="si">📊</div><div class="st">Hojas de cálculo</div><div class="sa">›</div></div>
+      <div class="setrow" onclick="verAjuste('cuenta')"><div class="si">👤</div><div class="st">Cuenta</div><div class="sa">›</div></div>
+    </div>
+  </section>
+
+  <!-- NAV FIJO ABAJO -->
+  <nav class="nav">
+    <button class="navit on" onclick="go('inicio',this)"><span class="nicon"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg></span>Inicio</button>
+    <button class="navit" onclick="go('bots',this)"><span class="nicon"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="2"/><path d="M12 8V5M9 13h.01M15 13h.01"/></svg></span>Bots</button>
+    <button class="navit" onclick="go('ventas',this)"><span class="nicon"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>Ventas</button>
+    <button class="navit" onclick="go('reportes',this)"><span class="nicon"><svg viewBox="0 0 24 24"><path d="M9 17v-6M15 17V7M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg></span>Reportes</button>
+    <button class="navit" onclick="go('ajustes',this)"><span class="nicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 01-4 0v-.2A1.6 1.6 0 006 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00-1.1-2.7H2a2 2 0 010-4h.2A1.6 1.6 0 004.6 6l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 002.7-1.1V2a2 2 0 014 0v.2A1.6 1.6 0 0019.4 6l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 001.1 2.7H21a2 2 0 010 4h-.2a1.6 1.6 0 00-1.4 1z"/></svg></span>Ajustes</button>
+  </nav>
+
+  <!-- NOTIFICACIONES -->
+  <div class="noverlay" id="noverlay" onclick="closeNoti()"></div>
+  <div class="npanel" id="npanel">
+    <div class="nph"><h3>Notificaciones</h3><div class="x" onclick="closeNoti()">✕</div></div>
+  </div>
+
+  <!-- MODAL AJUSTES -->
+  <div class="noverlay" id="aoverlay" onclick="cerrarAjuste()"></div>
+  <div class="amodal" id="amodal"></div>
+
+</div>
+
+<script>
+  // ===== CONFIG =====
+  const BASE = 'https://n8n-production-8a42.up.railway.app/webhook';
+  const URL_CONV   = BASE + '/leer-conversaciones';
+  const URL_PAUSA  = BASE + '/pausar-activar';
+  const URL_VENTAS = BASE + '/ventas';
+  const SHEET_URL  = 'https://docs.google.com/spreadsheets/d/1rDuqvITCfj1cJlxZnOucd_lJn6BWnAzMG5ZW8LA7zvM/edit';
+
+  let busqueda='';                 // texto del buscador
+  const dismissed = new Set();     // notificaciones borradas por el usuario
+  function buscar(v){ busqueda=(v||'').toLowerCase().trim(); renderConvos(); }
+
+  const colors=['#e0a93b','#4aa8ff','#2ecc71','#ff5a5f','#b07cff','#ff9f43'];
+  const ini=n=>(n||'').replace(/[^a-zA-ZÀ-ÿ ]/g,'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'#';
+
+  let CONVOS=[];        // contactos crudos del webhook
+  let filtro='todos';   // chip activo
+
+  // ---- convertir FECHA (d-m-aaaa) + HORA (07:47 a. m.) a número para ordenar ----
+  function ordenDe(fecha, hora){
+    let f=0;
+    if(fecha){
+      const p=String(fecha).trim().split(/[\/\-]/);
+      if(p.length>=3){ f=parseInt(p[2])*10000 + parseInt(p[1])*100 + parseInt(p[0]); } // aaaammdd
+    }
+    let min=0;
+    if(hora){
+      const h=String(hora).toLowerCase();
+      const mm=h.match(/(\d{1,2}):(\d{2})/);
+      if(mm){
+        let hh=parseInt(mm[1]); const mi=parseInt(mm[2]);
+        const pm=h.includes('p'); const am=h.includes('a');
+        if(pm && hh<12) hh+=12;
+        if(am && hh===12) hh=0;
+        min=hh*60+mi;
+      }
+    }
+    return f*10000 + min; // fecha manda, luego hora
+  }
+
+  // ---- normalizar una fila de la hoja a un objeto limpio ----
+  function normConv(r){
+    const tel=String(r.TELEFONO||'').trim();
+    const bot=String(r.BOT||'').trim().toLowerCase();
+    const modo=String(r.MODO||'bot').trim().toLowerCase();
+    return {
+      n: r.NOMBRE || tel || 'Sin nombre',
+      t: tel,
+      m: r.ULTIMO_MENSAJE || '',
+      time: r.HORA || '',
+      fecha: r.FECHA || '',
+      orden: ordenDe(r.FECHA, r.HORA),   // para ordenar: más reciente primero
+      bot: bot==='ramon' ? 'Ramón' : 'Carlos',
+      pais: bot==='ramon' ? 'PY' : 'CL',
+      active: modo==='bot',   // bot = activo, agente = pausado
+      modo
+    };
+  }
+
+  // ---- pintar lista de conversaciones ----
+  function renderConvos(){
+    let list=CONVOS.slice().sort((a,b)=>b.orden-a.orden); // último que escribió, primero
+    if(filtro==='carlos') list=list.filter(c=>c.bot==='Carlos');
+    if(filtro==='ramon')  list=list.filter(c=>c.bot==='Ramón');
+    if(filtro==='activos')  list=list.filter(c=>c.active);
+    if(filtro==='pausados') list=list.filter(c=>!c.active);
+    if(busqueda) list=list.filter(c=>((c.n||'')+' '+(c.t||'')+' '+(c.m||'')).toLowerCase().includes(busqueda));
+
+    const cont=document.getElementById('convlist');
+    if(!list.length){ cont.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px 0;font-size:13px">Sin conversaciones</div>'; return; }
+
+    const wa='<svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-3px" fill="#25D366"><path d="M17.5 14.4c-.3-.2-1.7-.8-1.9-.9-.3-.1-.5-.2-.6.2-.2.3-.7.9-.8 1-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.8-2.1-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.3.3-1 .9-1 2.3 0 1.4 1 2.7 1.1 2.9.2.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm0 18.3c-1.5 0-3-.4-4.3-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.3 8.3 0 1 1 12 20.3z"/></svg>';
+    cont.innerHTML=list.map((c,i)=>{
+      const col=colors[i%colors.length], flag=c.pais==='CL'?'🇨🇱':'🇵🇾';
+      return `<div class="conv"><div class="row1">
+        <div class="av" style="border-color:${col};color:${col}">${ini(c.n)}<span class="pres ${c.active?'green':'red'}"></span></div>
+        <div class="info"><div class="name">${c.n}</div><div class="phone">${c.t}</div><div class="msg">${c.m}</div></div>
+        <div class="meta"><div class="time">${c.time}</div></div></div>
+        <div class="row2"><div class="tag">${flag} ${c.bot}</div><div class="status ${c.active?'active':'paused'}">${c.active?'● Activo':'● Pausado'}</div></div>
+        <div class="acts">
+          <button class="btn ${c.active?'pause':'activate'}" onclick="togglePausa('${c.t}','${c.active?'agente':'bot'}',this)">${c.active?'⏸ Pausar':'▶ Activar'}</button>
+          <a class="btn ghost" href="https://wa.me/${c.t.replace(/[^0-9]/g,'')}" target="_blank" style="text-decoration:none">${wa} WhatsApp</a>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ---- stats arriba ----
+  function renderStats(){
+    const total=CONVOS.length;
+    const activos=CONVOS.filter(c=>c.active).length;
+    const pausados=total-activos;
+    const s=document.querySelectorAll('#inicio .stat .num');
+    if(s[0]) s[0].textContent=total;
+    if(s[1]) s[1].textContent=activos;
+    if(s[2]) s[2].textContent=pausados;
+  }
+
+  // ---- campana: notificaciones con borrado y puntos dinámicos ----
+  function keyAg(c){ return 'a:'+c.t; }
+  function keyVt(v){ return 'v:'+v.n+'|'+v.price+'|'+v.d; }
+
+  function renderNoti(){
+    const agentes=CONVOS.filter(c=>!c.active).filter(c=>!dismissed.has(keyAg(c)));
+    const ventas=NOTI_VENTAS.filter(v=>!dismissed.has(keyVt(v)));
+
+    // puntos de la campana: solo si hay algo
+    const rDot=document.querySelector('.bdot.r');
+    const gDot=document.querySelector('.bdot.g');
+    if(rDot){ rDot.textContent=agentes.length; rDot.style.display=agentes.length?'grid':'none'; }
+    if(gDot){ gDot.textContent=ventas.length; gDot.style.display=ventas.length?'grid':'none'; }
+
+    const hayAlgo=agentes.length||ventas.length;
+    let html=`<div class="nph"><h3>Notificaciones</h3><div style="display:flex;gap:8px;align-items:center">`
+      + (hayAlgo?`<button class="nclear" onclick="borrarTodas()">Borrar todas</button>`:``)
+      + `<div class="x" onclick="closeNoti()">✕</div></div></div>`;
+
+    // grupo rojo: pasar a agente
+    html+=`<div class="ngrp r">🔴 Pasar a agente <span class="cnt">${agentes.length}</span></div>`;
+    if(!agentes.length) html+='<div style="color:var(--muted);font-size:12px;padding:4px 2px 10px">Ninguno por ahora</div>';
+    agentes.slice().reverse().forEach(c=>{
+      const flag=c.pais==='CL'?'🇨🇱':'🇵🇾';
+      html+=`<div class="noti r" data-key="${keyAg(c)}"><div class="ni">🙋</div><div class="nt"><div class="ntt">${c.n} · ${flag}</div><div class="nts">Esperando agente — ${c.m||'sin mensaje'}</div></div><div class="ntime">${c.time||''}</div><button class="noti-del" onclick="borrarNoti(this,'${keyAg(c)}')">✕</button></div>`;
+    });
+    // grupo verde: ventas nuevas
+    html+=`<div class="ngrp g">🟢 Ventas nuevas <span class="cnt">${ventas.length}</span></div>`;
+    if(!ventas.length) html+='<div style="color:var(--muted);font-size:12px;padding:4px 2px 10px">Sin ventas nuevas</div>';
+    ventas.forEach(v=>{
+      html+=`<div class="noti g" data-key="${keyVt(v)}"><div class="ni">💰</div><div class="nt"><div class="ntt">${v.n} · ${v.flag}</div><div class="nts">${v.p} — ${v.price}</div></div><div class="ntime">${v.d}</div><button class="noti-del" onclick="borrarNoti(this,'${keyVt(v)}')">✕</button></div>`;
+    });
+    document.getElementById('npanel').innerHTML=html;
+    activarSwipe();
+  }
+
+  // borrar una notificación
+  function borrarNoti(btn,key){
+    dismissed.add(key);
+    const el=btn.closest('.noti');
+    if(el){ el.style.transform='translateX(-120%)'; el.style.opacity='0'; }
+    setTimeout(renderNoti,180);
+  }
+  // borrar todas
+  function borrarTodas(){
+    document.querySelectorAll('#npanel .noti').forEach(el=>{
+      const k=el.getAttribute('data-key'); if(k) dismissed.add(k);
+      el.style.transform='translateX(-120%)'; el.style.opacity='0';
+    });
+    setTimeout(renderNoti,180);
+  }
+  // deslizar para borrar
+  function activarSwipe(){
+    document.querySelectorAll('#npanel .noti').forEach(el=>{
+      let x0=null;
+      el.addEventListener('touchstart',e=>{ x0=e.touches[0].clientX; el.style.transition='none'; },{passive:true});
+      el.addEventListener('touchmove',e=>{ if(x0===null)return; const dx=e.touches[0].clientX-x0; if(dx<0) el.style.transform='translateX('+dx+'px)'; },{passive:true});
+      el.addEventListener('touchend',e=>{ el.style.transition='transform .2s,opacity .2s'; const dx=e.changedTouches[0].clientX-(x0||0); if(dx<-70){ const k=el.getAttribute('data-key'); if(k)dismissed.add(k); el.style.transform='translateX(-120%)'; el.style.opacity='0'; setTimeout(renderNoti,180);} else { el.style.transform='translateX(0)'; } x0=null; });
+    });
+  }
+
+  // ---- cargar conversaciones ----
+  async function cargarConvos(){
+    try{
+      const res=await fetch(URL_CONV);
+      const data=await res.json();
+      const rows=Array.isArray(data)?data:(data.body||[]);
+      CONVOS=rows.filter(r=>r && r.TELEFONO).map(normConv);
+      renderConvos(); renderStats(); renderNoti();
+    }catch(e){
+      document.getElementById('convlist').innerHTML='<div style="text-align:center;color:var(--red);padding:40px 0;font-size:13px">Error cargando datos</div>';
+    }
+  }
+
+  // ---- pausar / activar ----
+  async function togglePausa(tel,nuevoModo,btn){
+    const orig=btn.textContent; btn.textContent='...'; btn.disabled=true;
+    try{
+      await fetch(URL_PAUSA,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({telefono:tel,modo:nuevoModo})});
+      // actualizar local
+      const c=CONVOS.find(x=>x.t===tel);
+      if(c){ c.modo=nuevoModo; c.active=(nuevoModo==='bot'); }
+      renderConvos(); renderStats(); renderNoti();
+    }catch(e){ btn.textContent=orig; btn.disabled=false; alert('No se pudo actualizar'); }
+  }
+
+  // ---- chips de filtro ----
+  document.querySelectorAll('#inicio .chip').forEach(ch=>{
+    ch.onclick=()=>{
+      document.querySelectorAll('#inicio .chip').forEach(x=>x.classList.remove('on'));
+      ch.classList.add('on');
+      const t=ch.textContent.toLowerCase();
+      filtro = t.includes('carlos')?'carlos': t.includes('ramón')?'ramon': t.includes('activos')?'activos': t.includes('pausados')?'pausados':'todos';
+      renderConvos();
+    };
+  });
+
+  // ===== VENTAS =====
+  let VENTAS={cl:{total:'$0',count:0,items:[],hoy:'$0',hoyCount:0}, py:{total:'₲ 0',count:0,items:[],hoy:'₲ 0',hoyCount:0}};
+  let VENTAS_HOY=0, NOTI_VENTAS=[];
+
+  function fmtCLP(n){ return '$'+Math.round(n).toLocaleString('es-CL'); }
+  function fmtGS(n){ return '₲ '+Math.round(n).toLocaleString('es-PY'); }
+  function numero(x){ return parseInt(String(x||'').replace(/[^0-9]/g,''))||0; }
+  function esHoy(fecha){
+    if(!fecha) return false;
+    const hoy=new Date();
+    const p=String(fecha).split(',')[0].trim().split(/[\/\-]/);
+    if(p.length>=3){ return parseInt(p[0])===hoy.getDate() && parseInt(p[1])===(hoy.getMonth()+1) && parseInt(p[2])===hoy.getFullYear(); }
+    return false;
+  }
+  // ¿la fecha es del MES y AÑO actuales? (formato "29/5/2026, ...")
+  function esMes(fecha){
+    if(!fecha) return false;
+    const hoy=new Date();
+    const p=String(fecha).split(',')[0].trim().split(/[\/\-]/);
+    if(p.length>=3){ return parseInt(p[1])===(hoy.getMonth()+1) && parseInt(p[2])===hoy.getFullYear(); }
+    return false;
+  }
+  // día del mes (número) a partir de la fecha
+  function diaDe(fecha){ const p=String(fecha).split(',')[0].trim().split(/[\/\-]/); return parseInt(p[0])||0; }
+
+  async function cargarVentas(){
+    try{
+      const res=await fetch(URL_VENTAS);
+      const data=await res.json();
+      const rows=Array.isArray(data)?data:(data.body||[]);
+      const cl=[], py=[];
+      rows.forEach(r=>{
+        if(!r || (!r.NOMBRE && !r.PRODUCTO)) return;
+        const bot=String(r.BOT||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+        const precio=numero(r.PRECIO);
+        const item={n:r.NOMBRE||'—', p:`${r.PRODUCTO||''}${r.COMUNA||r.CIUDAD?(' · '+(r.COMUNA||r.CIUDAD)):''}`, price:0, raw:precio, d:r.FECHA||'', fecha:r.FECHA||''};
+        if(bot.includes('ramon')){ item.price=fmtGS(precio); py.push(item); }
+        else { item.price=fmtCLP(precio); cl.push(item); }
+      });
+
+      // SOLO mes actual (se reinicia solo al cambiar de mes)
+      const clMes=cl.filter(x=>esMes(x.fecha)), pyMes=py.filter(x=>esMes(x.fecha));
+      const totCL=clMes.reduce((a,b)=>a+b.raw,0), totPY=pyMes.reduce((a,b)=>a+b.raw,0);
+
+      const clHoy=clMes.filter(x=>esHoy(x.fecha)), pyHoy=pyMes.filter(x=>esHoy(x.fecha));
+      const totHoyCL=clHoy.reduce((a,b)=>a+b.raw,0), totHoyPY=pyHoy.reduce((a,b)=>a+b.raw,0);
+
+      VENTAS.cl={total:fmtCLP(totCL), count:clMes.length, items:clMes.slice().reverse(), hoy:fmtCLP(totHoyCL), hoyCount:clHoy.length};
+      VENTAS.py={total:fmtGS(totPY), count:pyMes.length, items:pyMes.slice().reverse(), hoy:fmtGS(totHoyPY), hoyCount:pyHoy.length};
+
+      // ventas de hoy para campana
+      VENTAS_HOY=clHoy.length+pyHoy.length;
+      NOTI_VENTAS=[...clHoy.map(x=>({n:x.n,p:x.p.split(' · ')[0],price:x.price,d:x.d,flag:'🇨🇱'})),
+                   ...pyHoy.map(x=>({n:x.n,p:x.p.split(' · ')[0],price:x.price,d:x.d,flag:'🇵🇾'}))].slice(0,8);
+
+      renderSales(currentSale); renderReportes(clMes,pyMes,totCL,totPY); renderNoti();
+    }catch(e){ /* silencioso */ }
+  }
+
+  let currentSale='cl';
+  function renderSales(k){
+    const d=VENTAS[k]; if(!d) return;
+    document.getElementById('vTotal').textContent=d.total;
+    document.getElementById('vCount').textContent=d.count+(d.count===1?' pedido':' pedidos');
+    const h=document.getElementById('vHoy'); if(h) h.textContent=d.hoy;
+    const hc=document.getElementById('vCountHoy'); if(hc) hc.textContent=d.hoyCount+(d.hoyCount===1?' pedido':' pedidos');
+    const cont=document.getElementById('salelist');
+    if(!d.items.length){ cont.innerHTML='<div style="text-align:center;color:var(--muted);padding:30px 0;font-size:13px">Sin ventas este mes</div>'; return; }
+    cont.innerHTML=d.items.map(s=>`<div class="sale"><div class="sic">📦</div><div class="sinfo"><div class="sn">${s.n}</div><div class="sp">${s.p}</div></div><div class="sm"><div class="price">${s.price}</div><div class="sd">${s.d}</div></div></div>`).join('');
+  }
+  function selVenta(el,k){currentSale=k;document.querySelectorAll('.seltab').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderSales(k);}
+
+  // ===== REPORTES =====
+  function renderReportes(cl,py,totCL,totPY){
+    // KPIs
+    const todos=[...cl,...py];
+    const totalMes=totCL+totPY;
+    const hoyItems=todos.filter(x=>esHoy(x.fecha));
+    const totalHoy=hoyItems.reduce((a,b)=>a+b.raw,0);
+    const ticket=todos.length? Math.round(totalMes/todos.length):0;
+    const k=document.querySelectorAll('#reportes .kpi .kv');
+    if(k[0]) k[0].textContent=fmtCLP(totalMes);
+    if(k[1]) k[1].textContent=fmtCLP(totalHoy);
+    if(k[2]) k[2].textContent=fmtCLP(ticket);
+    if(k[3]) k[3].textContent=todos.length;
+    const kt=document.querySelectorAll('#reportes .kpi .kt');
+    if(kt[1]) kt[1].textContent='↑ '+hoyItems.length+' pedidos hoy';
+    if(kt[3]) kt[3].textContent=todos.length+' pedidos total';
+
+    // Comparativa por bot
+    const cmp=document.querySelectorAll('#reportes .panel')[1];
+    if(cmp){
+      const maxBot=Math.max(totCL,totPY,1);
+      cmp.querySelector('.cmp').innerHTML=
+        `<div class="cmprow"><div class="ch"><span>🇨🇱 Carlos</span><b>${fmtCLP(totCL)}</b></div><div class="track"><div class="tf cl" style="width:${(totCL/maxBot*100)}%"></div></div></div>
+         <div class="cmprow"><div class="ch"><span>🇵🇾 Ramón</span><b>${fmtGS(totPY)}</b></div><div class="track"><div class="tf py" style="width:${(totPY/maxBot*100)}%"></div></div></div>`;
+    }
+
+    // Top productos
+    const prodCount={};
+    todos.forEach(x=>{ const p=(x.p.split(' · ')[0]||'Otro').trim(); prodCount[p]=(prodCount[p]||0)+1; });
+    const top=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxP=top.length?top[0][1]:1;
+    const panels=document.querySelectorAll('#reportes .panel');
+    const topPanel=panels[panels.length-1];
+    if(topPanel){
+      topPanel.querySelector('.cmp').innerHTML=top.map(([p,c])=>
+        `<div class="cmprow"><div class="ch"><span>${p}</span><b>${c}</b></div><div class="track"><div class="tf cl" style="width:${(c/maxP*100)}%"></div></div></div>`
+      ).join('') || '<div style="color:var(--muted);font-size:12px">Sin datos</div>';
+    }
+
+    // Barras por día del mes actual — apiladas por país (Chile azul + Paraguay coral)
+    const hoyD=new Date();
+    const diasMes=hoyD.getDate();
+    const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const psub=document.querySelector('#reportes .panel .psub');
+    if(psub) psub.textContent='Por día — '+meses[hoyD.getMonth()]+' '+hoyD.getFullYear();
+    const dCL={}, dPY={};
+    cl.forEach(x=>{ const dd=diaDe(x.fecha); if(dd) dCL[dd]=(dCL[dd]||0)+x.raw; });
+    py.forEach(x=>{ const dd=diaDe(x.fecha); if(dd) dPY[dd]=(dPY[dd]||0)+x.raw; });
+    let mx=1; for(let dd=1;dd<=diasMes;dd++){ const t=(dCL[dd]||0)+(dPY[dd]||0); if(t>mx) mx=t; }
+    const barsEl=document.getElementById('bars');
+    if(barsEl){
+      let html='';
+      for(let dd=1;dd<=diasMes;dd++){
+        const vcl=dCL[dd]||0, vpy=dPY[dd]||0, tot=vcl+vpy;
+        const lbl=(dd===1||dd===diasMes||dd%5===0)?dd:'';
+        const H=96; // alto máximo de barra en px
+        const hcl=tot>0?Math.max(vcl/mx*H,vcl>0?3:0):0;
+        const hpy=tot>0?Math.max(vpy/mx*H,vpy>0?3:0):0;
+        const empty=tot===0?'<div class="seg" style="height:3px;background:var(--line)"></div>':
+          `<div class="seg" style="height:${hpy}px;background:#fb7185"></div><div class="seg" style="height:${hcl}px;background:#2dd4bf"></div>`;
+        html+=`<div class="bar" title="Día ${dd}: Carlos ${fmtCLP(vcl)} · Ramón ${fmtGS(vpy)}"><div class="stack">${empty}</div><div class="bl">${lbl}</div></div>`;
+      }
+      barsEl.innerHTML=html;
+    }
+  }
+
+  // ===== NAV =====
+  var TITULOS={inicio:'Control de Bots',bots:'Bots',ventas:'Ventas',reportes:'Reportes',ajustes:'Ajustes'};
+  function go(id,el){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.navit').forEach(n=>n.classList.remove('on'));el.classList.add('on');var t=document.getElementById('hdrTitle');if(t&&TITULOS[id])t.textContent=TITULOS[id];}
+  function openNoti(){noverlay.classList.add('open');npanel.classList.add('open');}
+  function closeNoti(){noverlay.classList.remove('open');npanel.classList.remove('open');}
+
+  // ===== AJUSTES =====
+  function abrirHojas(){ window.open(SHEET_URL,'_blank'); }
+  function cerrarAjuste(){ document.getElementById('amodal').classList.remove('open'); document.getElementById('aoverlay').classList.remove('open'); }
+  function verAjuste(tipo){
+    const m=document.getElementById('amodal'), o=document.getElementById('aoverlay');
+    let t='', body='';
+    if(tipo==='idioma'){ t='Idioma y zona horaria';
+      body='<div class="line"><b>Idioma:</b> Español</div><div class="line"><b>Zona horaria:</b> Colombia (GMT-5)</div><div class="line"><b>Hora actual:</b> '+new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota'})+'</div>'; }
+    else if(tipo==='n8n'){ t='Conexiones n8n';
+      body='<div class="line"><b>Conversaciones</b><br>'+URL_CONV+'</div><div class="line"><b>Pausar / activar</b><br>'+URL_PAUSA+'</div><div class="line"><b>Ventas</b><br>'+URL_VENTAS+'</div>'; }
+    else { t='Cuenta';
+      body='<div class="line"><b>Negocio:</b> Jaye Group</div><div class="line"><b>Países:</b> Chile 🇨🇱 y Paraguay 🇵🇾</div><div class="line"><b>Bots:</b> Carlos (Chile) y Ramón (Paraguay)</div>'; }
+    m.innerHTML='<h3>'+t+'<div class="x" onclick="cerrarAjuste()">✕</div></h3>'+body;
+    m.classList.add('open'); o.classList.add('open');
+  }
+
+  // ===== INICIO =====
+  cargarConvos();
+  cargarVentas();
+  // refrescar cada 30 segundos
+  setInterval(()=>{ cargarConvos(); cargarVentas(); }, 30000);
+</script>
+</body>
+</html>
