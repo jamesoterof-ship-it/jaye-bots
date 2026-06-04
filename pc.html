@@ -221,6 +221,7 @@ button,input,select{font-family:inherit}
       <button class="on" data-bot="todos">Todos</button>
       <button data-bot="Carlos"><svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="20" fill="#fff"/><rect width="30" height="10" y="10" fill="#D52B1E"/><rect width="10" height="10" fill="#0039A6"/><polygon points="5,2.2 5.9,4.2 8,4.2 6.3,5.5 6.9,7.6 5,6.3 3.1,7.6 3.7,5.5 2,4.2 4.1,4.2" fill="#fff"/></svg> Carlos · Chile</button>
       <button data-bot="Ramon"><svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="6.67" fill="#D52B1E"/><rect width="30" height="6.67" y="6.67" fill="#fff"/><rect width="30" height="6.66" y="13.33" fill="#0038A8"/><circle cx="15" cy="10" r="2.4" fill="#fff" stroke="#0038A8" stroke-width=".4"/><circle cx="15" cy="10" r="1" fill="#2E7D32"/></svg> Ramón · Paraguay</button>
+      <button data-bot="James"><svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="10" fill="#FCD116"/><rect width="30" height="5" y="10" fill="#003893"/><rect width="30" height="5" y="15" fill="#CE1126"/></svg> James · Colombia</button>
     </div>
     <div class="view" id="v-dash">
       <div class="kpis" id="kpis"></div>
@@ -274,7 +275,7 @@ button,input,select{font-family:inherit}
         <div class="optrow" style="cursor:pointer" onclick="verAjuste('n8n')"><div><div class="lt">Conexiones n8n</div><div class="ls">Webhooks conectados al panel</div></div><span style="color:var(--muted)">›</span></div>
         <div class="optrow" style="cursor:pointer" onclick="verAjuste('idioma')"><div><div class="lt">Idioma y zona horaria</div><div class="ls">Español · Colombia (GMT-5)</div></div><span style="color:var(--muted)">›</span></div>
         <div class="sec-title" style="margin-top:6px">Cuenta</div>
-        <div class="optrow" style="cursor:pointer" onclick="verAjuste('cuenta')"><div><div class="lt">Mi negocio</div><div class="ls">Jaye Group · Chile y Paraguay</div></div><span style="color:var(--muted)">›</span></div>
+        <div class="optrow" style="cursor:pointer" onclick="verAjuste('cuenta')"><div><div class="lt">Mi negocio</div><div class="ls">Jaye Group · Chile, Paraguay y Colombia</div></div><span style="color:var(--muted)">›</span></div>
         <div class="optrow"><div><div class="lt">Soporte</div><div class="ls">gerencia@jayegroup.com.co</div></div><a class="b-ghost" href="mailto:gerencia@jayegroup.com.co">Escribir</a></div>
       </div>
     </div>
@@ -296,21 +297,22 @@ const URL_RESP=BASE+'/responder';
 const SHEET_URL='https://docs.google.com/spreadsheets/d/1rDuqvITCfj1cJlxZnOucd_lJn6BWnAzMG5ZW8LA7zvM/edit';
 
 let currentBot='todos',chartObj=null,dona=null,rbar=null,sel=-1;
-const COL={Carlos:'#2dd4bf',Ramon:'#fb7185'};
-const FLAG={CL:`<svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="20" fill="#fff"/><rect width="30" height="10" y="10" fill="#D52B1E"/><rect width="10" height="10" fill="#0039A6"/><polygon points="5,2.2 5.9,4.2 8,4.2 6.3,5.5 6.9,7.6 5,6.3 3.1,7.6 3.7,5.5 2,4.2 4.1,4.2" fill="#fff"/></svg>`,PY:`<svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="6.67" fill="#D52B1E"/><rect width="30" height="6.67" y="6.67" fill="#fff"/><rect width="30" height="6.66" y="13.33" fill="#0038A8"/><circle cx="15" cy="10" r="2.4" fill="#fff" stroke="#0038A8" stroke-width=".4"/><circle cx="15" cy="10" r="1" fill="#2E7D32"/></svg>`};
+const COL={Carlos:'#2dd4bf',Ramon:'#fb7185',James:'#fbbf24'};
+const FLAG={CL:`<svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="20" fill="#fff"/><rect width="30" height="10" y="10" fill="#D52B1E"/><rect width="10" height="10" fill="#0039A6"/><polygon points="5,2.2 5.9,4.2 8,4.2 6.3,5.5 6.9,7.6 5,6.3 3.1,7.6 3.7,5.5 2,4.2 4.1,4.2" fill="#fff"/></svg>`,PY:`<svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="6.67" fill="#D52B1E"/><rect width="30" height="6.67" y="6.67" fill="#fff"/><rect width="30" height="6.66" y="13.33" fill="#0038A8"/><circle cx="15" cy="10" r="2.4" fill="#fff" stroke="#0038A8" stroke-width=".4"/><circle cx="15" cy="10" r="1" fill="#2E7D32"/></svg>`,CO:`<svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="10" fill="#FCD116"/><rect width="30" height="5" y="10" fill="#003893"/><rect width="30" height="5" y="15" fill="#CE1126"/></svg>`};
 const WA=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.9.9-2.8-.2-.3A8 8 0 1 1 12 20zm4.4-5.6c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5 0a6.5 6.5 0 0 1-3.2-2.8c-.2-.4.2-.4.6-1.2 0-.2 0-.3 0-.5s-.5-1.3-.7-1.7-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3 1 2.6 1.1 2.8s1.9 2.9 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.4-.6 1.6-1.1s.2-1 .1-1.1-.2-.2-.4-.3z"/></svg>`;
-const BOTLOC={Carlos:'CL',Ramon:'PY'};
+const BOTLOC={Carlos:'CL',Ramon:'PY',James:'CO'};
 
 let convos=[], ordenes=[];
-let totCL=0,totPY=0,cntCL=0,cntPY=0,prodCL=0,prodPY=0;
+let totCL=0,totPY=0,totCO=0,cntCL=0,cntPY=0,cntCO=0,prodCL=0,prodPY=0,prodCO=0;
 let notis=[];
 const dismissed=new Set();
 
 const ini=n=>(n||'').replace(/[^a-zA-ZÀ-ÿ ]/g,'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'#';
 const soloNum=t=>String(t||'').replace(/[^0-9]/g,'');
-const botName=b=>b==='Ramon'?'Ramón':'Carlos';
+const botName=b=>b==='Ramon'?'Ramón':b==='James'?'James':'Carlos';
 function fmtCLP(n){return '$'+Math.round(n).toLocaleString('es-CL');}
 function fmtGS(n){return '₲ '+Math.round(n).toLocaleString('es-PY');}
+function fmtCOP(n){return '$'+Math.round(n).toLocaleString('es-CO');}
 function numero(x){return parseInt(String(x||'').replace(/[^0-9]/g,''))||0;}
 function esHoy(f){if(!f)return false;const h=new Date();const p=String(f).split(',')[0].trim().split(/[\/\-]/);return p.length>=3&&+p[0]===h.getDate()&&+p[1]===h.getMonth()+1&&+p[2]===h.getFullYear();}
 function esMes(f){if(!f)return false;const h=new Date();const p=String(f).split(',')[0].trim().split(/[\/\-]/);return p.length>=3&&+p[1]===h.getMonth()+1&&+p[2]===h.getFullYear();}
@@ -325,8 +327,8 @@ function normConv(r){
  const tel=soloNum(r.TELEFONO);
  const bot=String(r.BOT||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
  const modo=String(r.MODO||'bot').trim().toLowerCase();
- const esR=bot.includes('ramon');
- return {n:r.NOMBRE||tel||'Sin nombre', tel, ultimo:r.ULTIMO_MENSAJE||'', hora:r.HORA||'', fecha:r.FECHA||'', orden:ordenDe(r.FECHA,r.HORA), bot:esR?'Ramon':'Carlos', loc:esR?'PY':'CL', estado:modo==='agente'?'pausada':'activa', msgs:[], loaded:false};
+ const esR=bot.includes('ramon'); const esJ=bot.includes('james');
+ return {n:r.NOMBRE||tel||'Sin nombre', tel, ultimo:r.ULTIMO_MENSAJE||'', hora:r.HORA||'', fecha:r.FECHA||'', orden:ordenDe(r.FECHA,r.HORA), bot:esR?'Ramon':esJ?'James':'Carlos', loc:esR?'PY':esJ?'CO':'CL', estado:modo==='agente'?'pausada':'activa', msgs:[], loaded:false};
 }
 async function cargarConvos(){
  try{
@@ -365,10 +367,10 @@ function render(){
 // ===== HISTORIAL / CHAT =====
 function parseHist(txt){
  if(!txt) return [];
- const parts=String(txt).split(/(?=(?:Cliente|Asistente|Ramón|Ramon|Carlos|Agente)\s*:)/g);
+ const parts=String(txt).split(/(?=(?:Cliente|Asistente|Ramón|Ramon|Carlos|James|Agente)\s*:)/g);
  const out=[];
  parts.forEach(p=>{ p=p.trim(); if(!p) return;
-  const m=p.match(/^(Cliente|Asistente|Ramón|Ramon|Carlos|Agente)\s*:\s*([\s\S]*)$/);
+  const m=p.match(/^(Cliente|Asistente|Ramón|Ramon|Carlos|James|Agente)\s*:\s*([\s\S]*)$/);
   if(m){ const lbl=m[1], body=m[2].trim(); if(!body) return;
    const from=lbl==='Cliente'?'cliente':(lbl==='Agente'?'agente':'bot'); out.push({from,text:body,time:''}); }
   else { out.push({from:'cliente',text:p,time:''}); }
@@ -430,23 +432,23 @@ async function cargarVentas(){
   const ords=[];
   rows.forEach(r=>{ if(!r||(!r.NOMBRE&&!r.PRODUCTO))return;
    const bot=String(r.BOT||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-   const esR=bot.includes('ramon'); const precio=numero(r.PRECIO);
-   ords.push({cli:r.NOMBRE||'—', tel:soloNum(r.TELEFONO), prod:r.PRODUCTO||'—', cant:numero(r.CANTIDAD)||1, precioNum:precio, precio:esR?fmtGS(precio):fmtCLP(precio), dir:r.DIRECCION||'—', zona:r.COMUNA||r.CIUDAD||'—', region:r.REGION||r.DEPARTAMENTO||'—', bot:esR?'Ramon':'Carlos', loc:esR?'PY':'CL', estado:r.ESTADO||'—', fecha:r.FECHA||'', orden:ordenDe(r.FECHA,'')});
+   const esR=bot.includes('ramon'); const esJ=bot.includes('james'); const precio=numero(r.PRECIO);
+   ords.push({cli:r.NOMBRE||'—', tel:soloNum(r.TELEFONO), prod:r.PRODUCTO||'—', cant:numero(r.CANTIDAD)||1, precioNum:precio, precio:esR?fmtGS(precio):esJ?fmtCOP(precio):fmtCLP(precio), dir:r.DIRECCION||'—', zona:r.COMUNA||r.CIUDAD||'—', region:r.REGION||r.DEPARTAMENTO||'—', bot:esR?'Ramon':esJ?'James':'Carlos', loc:esR?'PY':esJ?'CO':'CL', estado:r.ESTADO||'—', fecha:r.FECHA||'', orden:ordenDe(r.FECHA,'')});
   });
   ordenes=ords.filter(o=>esMes(o.fecha)).sort((a,b)=>b.orden-a.orden);
-  const cl=ordenes.filter(o=>o.loc==='CL'), py=ordenes.filter(o=>o.loc==='PY');
-  totCL=cl.reduce((a,b)=>a+b.precioNum,0); totPY=py.reduce((a,b)=>a+b.precioNum,0);
-  cntCL=cl.length; cntPY=py.length;
-  prodCL=cl.reduce((a,b)=>a+b.cant,0); prodPY=py.reduce((a,b)=>a+b.cant,0);
+  const cl=ordenes.filter(o=>o.loc==='CL'), py=ordenes.filter(o=>o.loc==='PY'), co=ordenes.filter(o=>o.loc==='CO');
+  totCL=cl.reduce((a,b)=>a+b.precioNum,0); totPY=py.reduce((a,b)=>a+b.precioNum,0); totCO=co.reduce((a,b)=>a+b.precioNum,0);
+  cntCL=cl.length; cntPY=py.length; cntCO=co.length;
+  prodCL=cl.reduce((a,b)=>a+b.cant,0); prodPY=py.reduce((a,b)=>a+b.cant,0); prodCO=co.reduce((a,b)=>a+b.cant,0);
   if(!document.getElementById('v-ventas').classList.contains('hidden')){ ventas(); redrawCharts(); }
   if(!document.getElementById('v-rep').classList.contains('hidden')){ ranking(); redrawCharts(); }
   construirNoti();
  }catch(e){ /* silencioso */ }
 }
 function vkpisRender(){
- const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon';
- const ped=(sCL?cntCL:0)+(sPY?cntPY:0), prods=(sCL?prodCL:0)+(sPY?prodPY:0);
- let monto=currentBot==='Carlos'?fmtCLP(totCL):currentBot==='Ramon'?fmtGS(totPY):'2 monedas';
+ const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon', sCO=currentBot==='todos'||currentBot==='James';
+ const ped=(sCL?cntCL:0)+(sPY?cntPY:0)+(sCO?cntCO:0), prods=(sCL?prodCL:0)+(sPY?prodPY:0)+(sCO?prodCO:0);
+ let monto=currentBot==='Carlos'?fmtCLP(totCL):currentBot==='Ramon'?fmtGS(totPY):currentBot==='James'?fmtCOP(totCO):'3 monedas';
  const baseConv=byBot(convos).length||1; const conv=Math.round(ped/baseConv*100);
  document.getElementById('vkpis').innerHTML=
   '<div class="kpi"><div class="top"><div class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.7"><path d="M3 3h18v4H3zM5 7v13h14V7M9 11h6"/></svg></div><div><div class="num disp">'+ped+'</div><div class="lbl">Pedidos</div></div></div></div>'+
@@ -456,15 +458,16 @@ function vkpisRender(){
 }
 function ventas(){
  vkpisRender();
- const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon';
+ const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon', sCO=currentBot==='todos'||currentBot==='James';
  let h='';
  if(sCL)h+='<div class="pais"><div class="h"><span class="nm">'+FLAG.CL+'Chile</span><span class="cur" style="background:rgba(45,212,191,.14);color:var(--teal)">CLP</span></div><div class="big disp">'+fmtCLP(totCL)+'</div><div class="sub">'+cntCL+(cntCL===1?' pedido':' pedidos')+' · ticket '+fmtCLP(cntCL?totCL/cntCL:0)+'</div><div class="sub2">Bot: Carlos</div></div>';
  if(sPY)h+='<div class="pais"><div class="h"><span class="nm">'+FLAG.PY+'Paraguay</span><span class="cur" style="background:rgba(251,113,133,.14);color:var(--coral)">Gs</span></div><div class="big disp">'+fmtGS(totPY)+'</div><div class="sub">'+cntPY+(cntPY===1?' pedido':' pedidos')+' · ticket '+fmtGS(cntPY?totPY/cntPY:0)+'</div><div class="sub2">Bot: Ramón</div></div>';
+ if(sCO)h+='<div class="pais"><div class="h"><span class="nm">'+FLAG.CO+'Colombia</span><span class="cur" style="background:rgba(251,191,36,.14);color:#fbbf24">COP</span></div><div class="big disp">'+fmtCOP(totCO)+'</div><div class="sub">'+cntCO+(cntCO===1?' pedido':' pedidos')+' · ticket '+fmtCOP(cntCO?totCO/cntCO:0)+'</div><div class="sub2">Bot: James</div></div>';
  h+='<div class="addp"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Agregar pais</span></div>';
  document.getElementById('paises').innerHTML=h;
- let lg=''; if(sCL)lg+='<span><i style="background:#2dd4bf"></i>Chile</span>'; if(sPY)lg+='<span><i style="background:#fb7185"></i>Paraguay</span>';
+ let lg=''; if(sCL)lg+='<span><i style="background:#2dd4bf"></i>Chile</span>'; if(sPY)lg+='<span><i style="background:#fb7185"></i>Paraguay</span>'; if(sCO)lg+='<span><i style="background:#fbbf24"></i>Colombia</span>';
  document.getElementById('vlegend').innerHTML=lg;
- const ords=ordenes.filter(o=>(o.bot==='Carlos'&&sCL)||(o.bot==='Ramon'&&sPY));
+ const ords=ordenes.filter(o=>(o.bot==='Carlos'&&sCL)||(o.bot==='Ramon'&&sPY)||(o.bot==='James'&&sCO));
  document.getElementById('orders').innerHTML=ords.length?ords.map(o=>{const i=ordenes.indexOf(o);return '<div class="orow" onclick="verOrden('+i+')"><div class="obox"><svg viewBox="0 0 24 24"><path d="M20 7L12 3 4 7v10l8 4 8-4z"/><path d="M4 7l8 4 8-4"/></svg></div><div class="oinfo"><div class="on1">'+o.cli+'</div><div class="on2">'+FLAG[o.loc]+o.prod+' · '+o.zona+'</div></div><div class="oamt"><div class="v">'+o.precio+'</div><div class="d">'+o.fecha+'</div></div></div>';}).join(''):'<div style="text-align:center;color:var(--muted);padding:24px;font-size:13px">Sin pedidos este mes</div>';
 }
 function verOrden(i){
@@ -478,35 +481,36 @@ document.getElementById('modal').onclick=function(e){if(e.target===this)cerrarMo
 
 // ===== REPORTES =====
 function ranking(){
- const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon';
- const ords=ordenes.filter(o=>(o.bot==='Carlos'&&sCL)||(o.bot==='Ramon'&&sPY));
+ const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon', sCO=currentBot==='todos'||currentBot==='James';
+ const ords=ordenes.filter(o=>(o.bot==='Carlos'&&sCL)||(o.bot==='Ramon'&&sPY)||(o.bot==='James'&&sCO));
  const map={};
  ords.forEach(o=>{const k=o.zona+'|'+o.bot; if(!map[k])map[k]={zona:o.zona,bot:o.bot,loc:o.loc,cant:0,monto:0}; map[k].cant+=o.cant; map[k].monto+=o.precioNum;});
  let zonas=Object.values(map).sort((a,b)=>b.cant-a.cant).slice(0,8);
  const maxc=Math.max.apply(null,zonas.map(z=>z.cant).concat([1]));
  const cont=document.getElementById('ranking');
  if(!zonas.length){ cont.innerHTML='<div style="color:var(--muted);font-size:13px;padding:10px 0">Sin datos este mes</div>'; return; }
- cont.innerHTML=zonas.map((z,i)=>{const col=COL[z.bot],tagbg=z.bot==='Carlos'?'rgba(45,212,191,.14)':'rgba(251,113,133,.14)';const pct=Math.round(z.cant/maxc*100);const montoTxt=z.loc==='CL'?fmtCLP(z.monto):fmtGS(z.monto);return '<div class="rkrow"><span class="rkn">'+(i+1)+'</span><span class="rkname">'+z.zona+' <span class="rktag" style="background:'+tagbg+';color:'+col+'">'+FLAG[z.loc]+botName(z.bot)+'</span></span><div class="rktrack"><div class="rkfill" style="width:'+pct+'%;background:'+col+'"></div></div><span class="rkval">'+z.cant+' und<span style="color:var(--dim);font-weight:400;font-size:11px;display:block">'+montoTxt+'</span></span></div>';}).join('');
+ cont.innerHTML=zonas.map((z,i)=>{const col=COL[z.bot],tagbg=z.bot==='Carlos'?'rgba(45,212,191,.14)':z.bot==='James'?'rgba(251,191,36,.14)':'rgba(251,113,133,.14)';const pct=Math.round(z.cant/maxc*100);const montoTxt=z.loc==='CL'?fmtCLP(z.monto):z.loc==='CO'?fmtCOP(z.monto):fmtGS(z.monto);return '<div class="rkrow"><span class="rkn">'+(i+1)+'</span><span class="rkname">'+z.zona+' <span class="rktag" style="background:'+tagbg+';color:'+col+'">'+FLAG[z.loc]+botName(z.bot)+'</span></span><div class="rktrack"><div class="rkfill" style="width:'+pct+'%;background:'+col+'"></div></div><span class="rkval">'+z.cant+' und<span style="color:var(--dim);font-weight:400;font-size:11px;display:block">'+montoTxt+'</span></span></div>';}).join('');
 }
-function convPct(){ const ped=cntCL+cntPY; const base=convos.length||1; return Math.min(100,Math.round(ped/base*100)); }
+function convPct(){ const ped=cntCL+cntPY+cntCO; const base=convos.length||1; return Math.min(100,Math.round(ped/base*100)); }
 function drawChart(tc,gc){
- const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon';
+ const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon', sCO=currentBot==='todos'||currentBot==='James';
  const hoy=new Date(), dias=hoy.getDate();
- const labels=[],dCL=[],dPY=[];
- const cCL={},cPY={};
- ordenes.forEach(o=>{const d=diaDe(o.fecha); if(!d)return; if(o.loc==='CL')cCL[d]=(cCL[d]||0)+1; else cPY[d]=(cPY[d]||0)+1;});
- for(let d=1;d<=dias;d++){ labels.push(String(d)); dCL.push(cCL[d]||0); dPY.push(cPY[d]||0); }
+ const labels=[],dCL=[],dPY=[],dCO=[];
+ const cCL={},cPY={},cCO={};
+ ordenes.forEach(o=>{const d=diaDe(o.fecha); if(!d)return; if(o.loc==='CL')cCL[d]=(cCL[d]||0)+1; else if(o.loc==='CO')cCO[d]=(cCO[d]||0)+1; else cPY[d]=(cPY[d]||0)+1;});
+ for(let d=1;d<=dias;d++){ labels.push(String(d)); dCL.push(cCL[d]||0); dPY.push(cPY[d]||0); dCO.push(cCO[d]||0); }
  const ds=[];
  if(sCL)ds.push({label:'Chile',data:dCL,borderColor:'#2dd4bf',backgroundColor:'#2dd4bf',tension:.35,pointRadius:0,borderWidth:2});
  if(sPY)ds.push({label:'Paraguay',data:dPY,borderColor:'#fb7185',backgroundColor:'#fb7185',tension:.35,pointRadius:0,borderWidth:2});
+ if(sCO)ds.push({label:'Colombia',data:dCO,borderColor:'#fbbf24',backgroundColor:'#fbbf24',tension:.35,pointRadius:0,borderWidth:2});
  chartObj=new Chart(document.getElementById('chart'),{type:'line',data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10},maxTicksLimit:10}},y:{beginAtZero:true,ticks:{color:tc,stepSize:1,font:{size:11}},grid:{color:gc}}}}});
 }
 function drawRep(tc,gc){
  const pct=convPct();
  dona=new Chart(document.getElementById('rdona'),{type:'doughnut',data:{labels:['Convierte','No'],datasets:[{data:[pct,100-pct],backgroundColor:['#3ec27e','rgba(128,128,128,.15)'],borderWidth:0}]},options:{cutout:'72%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});
  const dl=document.getElementById('repDonaTxt'); if(dl)dl.textContent=pct+'%';
- rbar=new Chart(document.getElementById('rbar'),{type:'bar',data:{labels:['Carlos','Ramón'],datasets:[{data:[cntCL,cntPY],backgroundColor:['#2dd4bf','#fb7185'],borderRadius:4,barThickness:28}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,color:tc},grid:{color:gc}},y:{grid:{display:false},ticks:{color:tc}}}}});
- const rt=document.getElementById('repTicket'); if(rt)rt.textContent='Ticket prom · Carlos '+fmtCLP(cntCL?totCL/cntCL:0)+' · Ramón '+fmtGS(cntPY?totPY/cntPY:0);
+ rbar=new Chart(document.getElementById('rbar'),{type:'bar',data:{labels:['Carlos','Ramón','James'],datasets:[{data:[cntCL,cntPY,cntCO],backgroundColor:['#2dd4bf','#fb7185','#fbbf24'],borderRadius:4,barThickness:28}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,color:tc},grid:{color:gc}},y:{grid:{display:false},ticks:{color:tc}}}}});
+ const rt=document.getElementById('repTicket'); if(rt)rt.textContent='Ticket prom · Carlos '+fmtCLP(cntCL?totCL/cntCL:0)+' · Ramón '+fmtGS(cntPY?totPY/cntPY:0)+' · James '+fmtCOP(cntCO?totCO/cntCO:0);
 }
 function redrawCharts(){
  const light=document.body.classList.contains('light'),gc=light?'rgba(0,0,0,.07)':'rgba(255,255,255,.06)',tc=light?'#6d7178':'#888d99';
@@ -545,7 +549,7 @@ function verAjuste(tipo){
  let t='',body='';
  if(tipo==='n8n'){t='Conexiones n8n';body=drow('Conversaciones',URL_CONV)+drow('Pausar / activar',URL_PAUSA)+drow('Ventas',URL_VENTAS)+drow('Historial',URL_HIST)+drow('Responder',URL_RESP);}
  else if(tipo==='idioma'){t='Idioma y zona horaria';body=drow('Idioma','Español')+drow('Zona horaria','Colombia (GMT-5)')+drow('Hora actual',new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota'}));}
- else{t='Mi negocio';body=drow('Negocio','Jaye Group')+drow('Países','Chile y Paraguay')+drow('Bots','Carlos (CL) y Ramón (PY)')+drow('Correo','gerencia@jayegroup.com.co');}
+ else{t='Mi negocio';body=drow('Negocio','Jaye Group')+drow('Países','Chile, Paraguay y Colombia')+drow('Bots','Carlos (CL), Ramón (PY) y James (CO)')+drow('Correo','gerencia@jayegroup.com.co');}
  document.getElementById('modalbox').innerHTML='<div class="mhead"><div style="font-size:16px;font-weight:600" class="disp">'+t+'</div><div class="x" onclick="cerrarModal()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div></div><div class="mbody">'+body+'</div>';
  document.getElementById('modal').classList.remove('hidden');
 }
