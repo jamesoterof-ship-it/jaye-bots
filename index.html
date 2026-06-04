@@ -328,7 +328,9 @@ async function openChat(i){
   mh.innerHTML='<div class="empty">Cargando conversación...</div>';
   try{
    const res=await fetch(URL_HIST+'?telefono='+soloNum(c.tel)+'&pais='+c.loc);
-   const data=await res.json(); const row=Array.isArray(data)?data[0]:data;
+   const data=await res.json();
+   const arr=Array.isArray(data)?data:(data?[data]:[]);
+   const row=arr.find(r=>r&&soloNum(r.telefono)===soloNum(c.tel))||arr[0];
    c.msgs=parseHist(row&&row.historial); c.loaded=true;
   }catch(e){ c.msgs=[]; c.loaded=true; }
  }
