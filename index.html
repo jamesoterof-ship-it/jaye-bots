@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Jaye Group · Control de Bots</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#0e0f13;--bg2:#0c0d11;--card:#16181e;--card2:#1a1c22;--line:#23252e;--line2:#2e313c;--txt:#e8e8ea;--muted:#888d99;--dim:#6b6f7a;--gold:#e0a93b;--gold-soft:rgba(224,169,59,.14);--teal:#2dd4bf;--coral:#fb7185;--amber:#fbbf24;--green:#3ec27e;--green-soft:rgba(62,194,126,.14);--amber-soft:rgba(251,191,36,.14);--red:#ef4444;--wa:#25d366}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased}
 svg{width:100%;height:100%;display:block}
 .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);flex-shrink:0;background:var(--bg2)}
 .lg{font-weight:700;font-size:15px;letter-spacing:.5px;color:#fff}.lg b{color:var(--gold)}
@@ -128,9 +131,9 @@ svg{width:100%;height:100%;display:block}
 <div class="chips" id="chips"></div>
 <div class="content">
  <div class="view on" id="v-inicio">
-  <div class="kgrid" id="kpis"></div>
+  <div class="kgrid" id="kpis"><div class="empty" style="grid-column:1/3">Cargando…</div></div>
   <div class="sect">Ventas de hoy</div>
-  <div id="hoyList"></div>
+  <div id="hoyList"><div class="empty">Cargando…</div></div>
  </div>
  <div class="view" id="v-chats">
   <div class="srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="buscar" placeholder="Buscar conversación..." oninput="renderChats()"></div>
@@ -139,7 +142,7 @@ svg{width:100%;height:100%;display:block}
    <button data-est="activa">Activas</button>
    <button data-est="pausada">Pausadas</button>
   </div>
-  <div id="chatlist"></div>
+  <div id="chatlist"><div class="empty">Cargando conversaciones…</div></div>
  </div>
  <div class="view" id="v-bots"><div id="botlist"></div></div>
  <div class="view" id="v-ventas">
