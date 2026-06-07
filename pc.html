@@ -307,7 +307,7 @@ let totCL=0,totPY=0,totCO=0,cntCL=0,cntPY=0,cntCO=0,prodCL=0,prodPY=0,prodCO=0;
 let notis=[];
 const dismissed=new Set();
 
-const ini=n=>(n||'').replace(/[^a-zA-ZÀ-ÿ ]/g,'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'#';
+const ini=n=>String(n||'').replace(/[^a-zA-ZÀ-ÿ ]/g,'').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'#';
 const soloNum=t=>String(t||'').replace(/[^0-9]/g,'');
 const botName=b=>b==='Ramon'?'Ramón':b==='James'?'James':'Carlos';
 function fmtCLP(n){return '$'+Math.round(n).toLocaleString('es-CL');}
