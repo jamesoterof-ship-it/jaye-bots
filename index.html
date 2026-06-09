@@ -230,6 +230,7 @@ const WA=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 
 const BOTLOC={Carlos:'CL',Ramon:'PY',James:'CO'};
 const CUR={CL:['CLP','rgba(45,212,191,.14)','#2dd4bf'],PY:['Gs','rgba(251,113,133,.14)','#fb7185'],CO:['COP','rgba(251,191,36,.14)','#fbbf24']};
 const PAIS={CL:'Chile',PY:'Paraguay',CO:'Colombia'};
+const FOTOS_PRODUCTO=['https://jamesoterof-ship-it.github.io/jaye-bots/fotos/diferencia.png','https://jamesoterof-ship-it.github.io/jaye-bots/fotos/hogar.png'];
 
 let convos=[], ordenes=[];
 let totCL=0,totPY=0,totCO=0,cntCL=0,cntPY=0,cntCO=0,prodCL=0,prodPY=0,prodCO=0;
@@ -385,7 +386,14 @@ function renderBubbles(c){
  if(!c.msgs.length){ mh.innerHTML='<div class="empty">Sin mensajes todavía</div>'; return; }
  mh.innerHTML=c.msgs.map(m=>{
   const tag=(m.from!=='cliente')?'<span class="tag">'+(m.from==='agente'?'Tú':'Bot')+'</span>':'';
-  const cuerpo=m.img?'<img class="msgimg" src="'+m.img+'" onclick="ampliarImg(this)">':m.text;
+  let cuerpo;
+  if(m.img){ cuerpo='<img class="msgimg" src="'+m.img+'" onclick="ampliarImg(this)">'; }
+  else {
+   let texto=m.text||'', fotos=false;
+   if(texto.indexOf('###FOTO###')!==-1) fotos=true;
+   texto=texto.replace(/###FOTO###/g,'').replace(/###VENTA###[\s\S]*?###FIN###/g,'').replace(/###AGENTE###/g,'').trim();
+   cuerpo=texto+(fotos?FOTOS_PRODUCTO.map(u=>'<img class="msgimg" src="'+u+'" onclick="ampliarImg(this)">').join(''):'');
+  }
   let st='';
   if(m.from==='agente'&&m.st){st='<span class="stt">'+(m.st==='send'?'· enviando…':m.st==='err'?'· no enviado':'· enviado')+'</span>';}
   const mt=(m.time||st)?'<span class="mt">'+(m.time||'')+st+'</span>':'';
