@@ -111,6 +111,8 @@ button,input,select{font-family:inherit}
 .chatin input{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:11px;color:var(--txt);font-size:13px;padding:11px 13px;outline:none}
 .chatin .send{background:var(--wa);color:#fff;border:none;width:42px;border-radius:11px;cursor:pointer;display:grid;place-items:center}
 .chatin .send svg{width:18px;height:18px;fill:currentColor}
+.chatin .adj{background:var(--card2);border:1px solid var(--line);color:var(--txt);width:42px;border-radius:11px;cursor:pointer;display:grid;place-items:center;flex-shrink:0}
+.chatin .adj svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .footbar{display:flex;justify-content:flex-end;padding:12px 0 16px;flex-shrink:0}
 .b-ghost{display:flex;align-items:center;gap:9px;background:var(--card);color:var(--txt);border:1px solid var(--line);font-weight:500;font-size:13.5px;padding:11px 20px;border-radius:12px;cursor:pointer;text-decoration:none}
 .b-ghost svg{width:16px;height:16px}
@@ -239,7 +241,7 @@ button,input,select{font-family:inherit}
           </div>
           <div class="chatmsgs" id="chMsgs"></div>
           <div class="chatnote" id="chNote"></div>
-          <div class="chatin"><input id="chInput" placeholder="Escribe una respuesta..." onkeydown="if(event.key==='Enter')sendMsg()"><button class="send" onclick="sendMsg()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button></div>
+          <div class="chatin"><button class="adj" onclick="document.getElementById('chFile').click()" title="Enviar imagen"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg></button><input type="file" id="chFile" accept="image/*" style="display:none" onchange="sendImg(this)"><input id="chInput" placeholder="Escribe una respuesta..." onkeydown="if(event.key==='Enter')sendMsg()"><button class="send" onclick="sendMsg()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button></div>
         </div>
       </div>
       <div class="footbar"><button class="b-ghost" onclick="exportar()"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar reporte</button></div>
@@ -294,6 +296,7 @@ const URL_PAUSA=BASE+'/pausar-activar';
 const URL_VENTAS=BASE+'/ventas';
 const URL_HIST=BASE+'/historial';
 const URL_RESP=BASE+'/responder';
+const URL_IMG='https://web-production-a5adc.up.railway.app/api/jaye/enviar-imagen';
 const SHEET_URL='https://docs.google.com/spreadsheets/d/1rDuqvITCfj1cJlxZnOucd_lJn6BWnAzMG5ZW8LA7zvM/edit';
 
 let currentBot='todos',chartObj=null,dona=null,rbar=null,sel=-1;
@@ -418,6 +421,25 @@ async function sendMsg(){
   await fetch(URL_RESP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),mensaje:t,pais:c.loc})});
   await fetch(URL_PAUSA,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),modo:'agente'})});
  }catch(e){ alert('No se pudo enviar el mensaje. Revisa la conexión.'); }
+}
+async function sendImg(input){
+ if(sel<0)return; const f=input.files&&input.files[0]; input.value=''; if(!f)return;
+ const c=convos[sel];
+ const rd=new FileReader();
+ rd.onload=function(){ const img=new Image();
+  img.onload=async function(){ let max=1280,w=img.width,h=img.height;
+   if(w>max||h>max){ if(w>=h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;} }
+   const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
+   const dataUrl=cv.toDataURL('image/jpeg',0.82);
+   const now=new Date(),hh=now.getHours()%12||12,mm=String(now.getMinutes()).padStart(2,'0');
+   c.msgs.push({from:'agente',text:'📷 Foto enviada',time:hh+':'+mm}); c.estado='pausada'; renderBubbles(c); render();
+   try{
+    const r=await fetch(URL_IMG,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pais:c.loc,telefono:soloNum(c.tel),imagen:dataUrl,caption:''})});
+    if(!r.ok) throw new Error('img');
+    await fetch(URL_PAUSA,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),modo:'agente'})});
+   }catch(e){ alert('No se pudo enviar la imagen. Revisa la conexión.'); }
+  }; img.src=rd.result;
+ }; rd.readAsDataURL(f);
 }
 async function toggle(i){
  const c=convos[i]; const nuevo=c.estado==='activa'?'agente':'bot';
