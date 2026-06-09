@@ -111,6 +111,14 @@ svg{width:100%;height:100%;display:block}
 .rbox .snd svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
 .rbox .adj{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--txt);display:grid;place-items:center;flex-shrink:0;cursor:pointer}
 .rbox .adj svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.qreplies{display:flex;gap:7px;padding:8px 14px 0;overflow-x:auto;flex-shrink:0}
+.qreplies::-webkit-scrollbar{display:none}
+.qr{flex-shrink:0;background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:12.5px;padding:7px 13px;border-radius:16px;white-space:nowrap;cursor:pointer;font-family:inherit}
+.chatwarn{margin:8px 14px 0;background:var(--amber-soft);color:var(--amber);font-size:11.5px;line-height:1.4;padding:9px 12px;border-radius:10px}
+.msgimg{max-width:220px;border-radius:10px;display:block;cursor:pointer;margin-top:2px}
+.msg .stt{font-size:10px;opacity:.85;margin-left:5px}
+.imgov{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:70;display:none;align-items:center;justify-content:center;padding:16px}
+.imgov.on{display:flex}.imgov img{max-width:100%;max-height:90vh;border-radius:12px}
 .obody{flex:1;overflow-y:auto;padding:6px 16px 20px}
 .drow{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid #1a1c22;font-size:14px}
 .drow .k{color:var(--muted);flex-shrink:0}
@@ -181,7 +189,9 @@ svg{width:100%;height:100%;display:block}
   <a class="wa" id="mc_wa" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.9.9-2.8-.2-.3A8 8 0 1 1 12 20zm4.4-5.6c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5 0a6.5 6.5 0 0 1-3.2-2.8c-.2-.4.2-.4.6-1.2 0-.2 0-.3 0-.5s-.5-1.3-.7-1.7-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3 1 2.6 1.1 2.8s1.9 2.9 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.4-.6 1.6-1.1s.2-1 .1-1.1-.2-.2-.4-.3z"/></svg></a>
  </div>
  <div class="msgs" id="mc_msgs"></div>
+ <div class="chatwarn" id="mc_warn" style="display:none"></div>
  <div class="rnote" id="mc_note"></div>
+ <div class="qreplies" id="qreplies"></div>
  <div class="rbox"><button class="adj" onclick="document.getElementById('mc_file').click()" title="Enviar imagen"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg></button><input type="file" id="mc_file" accept="image/*" style="display:none" onchange="sendImg(this)"><input id="mc_input" placeholder="Escribe una respuesta..."><button class="snd" onclick="sendMsg()"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button></div>
 </div>
 
@@ -192,6 +202,8 @@ svg{width:100%;height:100%;display:block}
  </div>
  <div class="obody" id="mo_body"></div>
 </div>
+
+<div class="imgov" id="imgov" onclick="this.classList.remove('on')"><img id="imgovImg" src=""></div>
 
 <div class="noti" id="noti">
  <div class="notibox">
@@ -209,7 +221,9 @@ const URL_HIST=BASE+'/historial';
 const URL_RESP=BASE+'/responder';
 const URL_IMG='https://web-production-a5adc.up.railway.app/api/jaye/enviar-imagen';
 
-let currentBot='todos',sel=-1,fEst='';
+let currentBot='todos',sel=-1,selTel=null,fEst='';
+const alertados=new Set(); let primeraCarga=true, convosCargadas=false, ventasCargadas=false, audioCtx=null, permPedida=false;
+const RESPUESTAS=['Sí, tenemos stock disponible.','¿Me confirmas tu dirección de entrega, por favor?','¿Para qué ciudad sería el envío?','El pago es contra entrega.','En un momento te confirmo y seguimos.','¡Gracias por tu compra! Ya estamos procesando tu pedido.'];
 const COL={Carlos:'#2dd4bf',Ramon:'#fb7185',James:'#fbbf24'};
 const FLAG={CL:`<svg class="fl" viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><rect width="30" height="10" y="10" fill="#D52B1E"/><rect width="10" height="10" fill="#0039A6"/><polygon points="5,2.2 5.9,4.2 8,4.2 6.3,5.5 6.9,7.6 5,6.3 3.1,7.6 3.7,5.5 2,4.2 4.1,4.2" fill="#fff"/></svg>`,PY:`<svg class="fl" viewBox="0 0 30 20"><rect width="30" height="6.67" fill="#D52B1E"/><rect width="30" height="6.67" y="6.67" fill="#fff"/><rect width="30" height="6.66" y="13.33" fill="#0038A8"/><circle cx="15" cy="10" r="2.4" fill="#fff"/><circle cx="15" cy="10" r="1" fill="#2E7D32"/></svg>`,CO:`<svg class="fl" viewBox="0 0 30 20"><rect width="30" height="10" fill="#FCD116"/><rect width="30" height="5" y="10" fill="#003893"/><rect width="30" height="5" y="15" fill="#CE1126"/></svg>`};
 const WA=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.9.9-2.8-.2-.3A8 8 0 1 1 12 20zm4.4-5.6c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5 0a6.5 6.5 0 0 1-3.2-2.8c-.2-.4.2-.4.6-1.2 0-.2 0-.3 0-.5s-.5-1.3-.7-1.7-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3 1 2.6 1.1 2.8s1.9 2.9 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.4-.6 1.6-1.1s.2-1 .1-1.1-.2-.2-.4-.3z"/></svg>`;
@@ -233,6 +247,14 @@ function esHoy(f){if(!f)return false;const h=new Date();const p=String(f).split(
 function esMes(f){if(!f)return false;const h=new Date();const p=String(f).split(',')[0].trim().split(/[\/\-]/);return p.length>=3&&+p[1]===h.getMonth()+1&&+p[2]===h.getFullYear();}
 function ordenDe(fecha,hora){let f=0;if(fecha){const p=String(fecha).trim().split(/[\/\-]/);if(p.length>=3)f=+p[2]*10000+ +p[1]*100+ +p[0];}let min=0;if(hora){const h=String(hora).toLowerCase();const mm=h.match(/(\d{1,2}):(\d{2})/);if(mm){let hh=+mm[1];const mi=+mm[2];if(h.includes('p')&&hh<12)hh+=12;if(h.includes('a')&&hh===12)hh=0;min=hh*60+mi;}}return f*10000+min;}
 const byBot=a=>currentBot==='todos'?a:a.filter(c=>c.bot===currentBot);
+const now=()=>Date.now();
+function fechaMs(fecha,hora){if(!fecha)return 0;const p=String(fecha).split(',')[0].trim().split(/[\/\-]/);if(p.length<3)return 0;let hh=0,mi=0;if(hora){const h=String(hora).toLowerCase();const mm=h.match(/(\d{1,2}):(\d{2})/);if(mm){hh=+mm[1];mi=+mm[2];if(h.includes('p')&&hh<12)hh+=12;if(h.includes('a')&&hh===12)hh=0;}}return new Date(+p[2],+p[1]-1,+p[0],hh,mi).getTime();}
+function pintarRespuestas(){const cont=document.getElementById('qreplies');if(!cont)return;cont.innerHTML=RESPUESTAS.map((r,i)=>'<button class="qr" onclick="quickReply('+i+')">'+r+'</button>').join('');}
+function quickReply(i){const inp=document.getElementById('mc_input');inp.value=RESPUESTAS[i];inp.focus();}
+function ampliarImg(el){document.getElementById('imgovImg').src=el.src;document.getElementById('imgov').classList.add('on');}
+function beep(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.16,audioCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.45);o.start();o.stop(audioCtx.currentTime+.46);}catch(e){}}
+function avisar(n){beep();if('Notification' in window && Notification.permission==='granted'){try{new Notification(n.b,{body:n.s});}catch(e){}}}
+document.addEventListener('click',function(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();if(!permPedida&&'Notification' in window&&Notification.permission==='default'){permPedida=true;try{Notification.requestPermission();}catch(e){}}});
 
 function renderChips(){
  const bots=[['todos','Todos',''],['Carlos','Carlos','CL'],['Ramon','Ramón','PY'],['James','James','CO']];
@@ -252,9 +274,24 @@ async function cargarConvos(){
  try{
   const res=await fetch(URL_CONV); const data=await res.json();
   const rows=Array.isArray(data)?data:(data.body||[]);
+  const previo={}; convos.forEach(c=>{previo[c.tel]={msgs:c.msgs,loaded:c.loaded};});
   convos=rows.filter(r=>r&&r.TELEFONO).map(normConv).sort((a,b)=>b.orden-a.orden);
-  renderKpis(); renderChats(); renderBots(); construirNoti();
- }catch(e){ document.getElementById('chatlist').innerHTML='<div class="empty" style="color:var(--red)">Error cargando conversaciones</div>'; }
+  convos.forEach(c=>{const p=previo[c.tel]; if(p&&p.loaded){c.msgs=p.msgs;c.loaded=true;}});
+  sel=selTel?convos.findIndex(c=>c.tel===selTel):-1;
+  convosCargadas=true;
+  renderKpis(); renderChats(); renderBots(); construirNoti(); refrescarChatAbierto();
+ }catch(e){ convosCargadas=true; document.getElementById('chatlist').innerHTML='<div class="empty" style="color:var(--red)">Error cargando conversaciones</div>'; }
+}
+async function refrescarChatAbierto(){
+ if(sel<0)return; const c=convos[sel]; if(!c)return;
+ try{
+  const res=await fetch(URL_HIST+'?telefono='+soloNum(c.tel)+'&pais='+c.loc);
+  const data=await res.json();
+  const arr=Array.isArray(data)?data:(data?[data]:[]);
+  const row=arr.find(r=>r&&soloNum(r.telefono)===soloNum(c.tel))||arr[0];
+  const nuevos=parseHist(row&&row.historial);
+  if(nuevos.length>c.msgs.length){ c.msgs=nuevos; c.loaded=true; if(sel>=0&&convos[sel]===c) renderBubbles(c); }
+ }catch(e){}
 }
 function renderKpis(){
  const base=byBot(convos);
@@ -319,11 +356,15 @@ function parseHist(txt){
  return out;
 }
 async function openChat(i){
- sel=i; const c=convos[i];
+ sel=i; selTel=convos[i].tel; const c=convos[i];
  document.getElementById('mc_name').innerHTML=FLAG[c.loc]+c.n;
  document.getElementById('mc_st').textContent=c.tel+' · '+(c.estado==='activa'?'Bot activo':'En pausa · atiende agente');
  document.getElementById('mc_note').textContent=c.estado==='activa'?'Al responder, el bot se pausa automáticamente.':'Estás atendiendo esta conversación (bot en pausa).';
  document.getElementById('mc_wa').href='https://wa.me/'+soloNum(c.tel);
+ const w=document.getElementById('mc_warn'); const ult=fechaMs(c.fecha,c.hora);
+ if(ult && (now()-ult)>86400000){ w.style.display='block'; w.innerHTML='⚠ Pasaron más de 24 horas desde el último mensaje. WhatsApp puede no entregar mensajes libres; quizás necesites una plantilla.'; }
+ else w.style.display='none';
+ pintarRespuestas();
  setChatToggle(c);
  document.getElementById('ovchat').classList.add('on');
  const mh=document.getElementById('mc_msgs');
@@ -342,22 +383,33 @@ async function openChat(i){
 function renderBubbles(c){
  const mh=document.getElementById('mc_msgs');
  if(!c.msgs.length){ mh.innerHTML='<div class="empty">Sin mensajes todavía</div>'; return; }
- mh.innerHTML=c.msgs.map(m=>'<div class="msg '+m.from+'">'+(m.from!=='cliente'?'<span class="tag">'+(m.from==='agente'?'Tú':'Bot')+'</span>':'')+m.text+(m.time?'<span class="mt">'+m.time+'</span>':'')+'</div>').join('');
+ mh.innerHTML=c.msgs.map(m=>{
+  const tag=(m.from!=='cliente')?'<span class="tag">'+(m.from==='agente'?'Tú':'Bot')+'</span>':'';
+  const cuerpo=m.img?'<img class="msgimg" src="'+m.img+'" onclick="ampliarImg(this)">':m.text;
+  let st='';
+  if(m.from==='agente'&&m.st){st='<span class="stt">'+(m.st==='send'?'· enviando…':m.st==='err'?'· no enviado':'· enviado')+'</span>';}
+  const mt=(m.time||st)?'<span class="mt">'+(m.time||'')+st+'</span>':'';
+  return '<div class="msg '+m.from+'">'+tag+cuerpo+mt+'</div>';
+ }).join('');
  mh.scrollTop=mh.scrollHeight;
 }
-function cerrarChat(){document.getElementById('ovchat').classList.remove('on');sel=-1;}
+function cerrarChat(){document.getElementById('ovchat').classList.remove('on');sel=-1;selTel=null;}
 async function sendMsg(){
  if(sel<0)return; const inp=document.getElementById('mc_input'),t=inp.value.trim(); if(!t)return;
  const c=convos[sel];
- const now=new Date(),hh=now.getHours()%12||12,mm=String(now.getMinutes()).padStart(2,'0');
- c.msgs.push({from:'agente',text:t,time:hh+':'+mm}); c.estado='pausada'; inp.value=''; renderBubbles(c);
+ const d=new Date(),hh=d.getHours()%12||12,mm=String(d.getMinutes()).padStart(2,'0');
+ const m={from:'agente',text:t,time:hh+':'+mm,st:'send'};
+ c.msgs.push(m); c.estado='pausada'; inp.value=''; renderBubbles(c);
  document.getElementById('mc_st').textContent=c.tel+' · En pausa · atiende agente';
  document.getElementById('mc_note').textContent='Estás atendiendo esta conversación (bot en pausa).';
  renderChats();
  try{
-  await fetch(URL_RESP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),mensaje:t,pais:c.loc})});
+  const r=await fetch(URL_RESP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),mensaje:t,pais:c.loc})});
+  if(!r.ok) throw new Error('resp');
   await fetch(URL_PAUSA,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),modo:'agente'})});
- }catch(e){ alert('No se pudo enviar el mensaje. Revisa la conexión.'); }
+  m.st='ok';
+ }catch(e){ m.st='err'; }
+ if(sel>=0&&convos[sel]===c) renderBubbles(c);
 }
 async function sendImg(input){
  if(sel<0)return; const f=input.files&&input.files[0]; input.value=''; if(!f)return;
@@ -368,13 +420,16 @@ async function sendImg(input){
    if(w>max||h>max){ if(w>=h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;} }
    const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
    const dataUrl=cv.toDataURL('image/jpeg',0.82);
-   const now=new Date(),hh=now.getHours()%12||12,mm=String(now.getMinutes()).padStart(2,'0');
-   c.msgs.push({from:'agente',text:'📷 Foto enviada',time:hh+':'+mm}); c.estado='pausada'; renderBubbles(c); renderChats();
+   const d=new Date(),hh=d.getHours()%12||12,mm=String(d.getMinutes()).padStart(2,'0');
+   const m={from:'agente',img:dataUrl,text:'',time:hh+':'+mm,st:'send'};
+   c.msgs.push(m); c.estado='pausada'; renderBubbles(c); renderChats();
    try{
     const r=await fetch(URL_IMG,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pais:c.loc,telefono:soloNum(c.tel),imagen:dataUrl,caption:''})});
     if(!r.ok) throw new Error('img');
     await fetch(URL_PAUSA,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),modo:'agente'})});
-   }catch(e){ alert('No se pudo enviar la imagen. Revisa la conexión.'); }
+    m.st='ok';
+   }catch(e){ m.st='err'; }
+   if(sel>=0&&convos[sel]===c) renderBubbles(c);
   }; img.src=rd.result;
  }; rd.readAsDataURL(f);
 }
@@ -395,8 +450,9 @@ async function cargarVentas(){
   totCL=cl.reduce((a,b)=>a+b.precioNum,0);totPY=py.reduce((a,b)=>a+b.precioNum,0);totCO=co.reduce((a,b)=>a+b.precioNum,0);
   cntCL=cl.length;cntPY=py.length;cntCO=co.length;
   prodCL=cl.reduce((a,b)=>a+b.cant,0);prodPY=py.reduce((a,b)=>a+b.cant,0);prodCO=co.reduce((a,b)=>a+b.cant,0);
+  ventasCargadas=true;
   renderVentas(); renderRep(); renderHoy(); construirNoti();
- }catch(e){ document.getElementById('orders').innerHTML='<div class="empty" style="color:var(--red)">Error cargando ventas</div>'; }
+ }catch(e){ ventasCargadas=true; document.getElementById('orders').innerHTML='<div class="empty" style="color:var(--red)">Error cargando ventas</div>'; }
 }
 function paisCard(loc,tot,cnt){
  const c=CUR[loc];
@@ -446,6 +502,12 @@ function construirNoti(){
  const arr=[];
  ordenes.filter(o=>esHoy(o.fecha)).forEach(o=>arr.push({id:'v:'+o.tel+':'+o.fecha,tipo:'venta',b:'Nueva venta',s:botName(o.bot)+' · '+o.precio+' · '+o.zona}));
  convos.filter(c=>c.estado==='pausada').forEach(c=>arr.push({id:'a:'+c.tel,tipo:'agente',b:'Atención de agente',s:c.n+' — '+(c.ultimo||'esperando')}));
+ arr.forEach(n=>{
+  if(alertados.has(n.id)||dismissed.has(n.id))return;
+  alertados.add(n.id);
+  if(!primeraCarga) avisar(n);
+ });
+ if(convosCargadas&&ventasCargadas)primeraCarga=false;
  notis=arr; renderNoti();
 }
 function renderNoti(){

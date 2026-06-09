@@ -113,6 +113,13 @@ button,input,select{font-family:inherit}
 .chatin .send svg{width:18px;height:18px;fill:currentColor}
 .chatin .adj{background:var(--card2);border:1px solid var(--line);color:var(--txt);width:42px;border-radius:11px;cursor:pointer;display:grid;place-items:center;flex-shrink:0}
 .chatin .adj svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.qreplies{display:flex;gap:7px;padding:0 12px 4px;overflow-x:auto}
+.qreplies::-webkit-scrollbar{height:0}
+.qr{flex-shrink:0;background:var(--card2);border:1px solid var(--line);color:var(--muted);font-size:11.5px;padding:6px 11px;border-radius:14px;cursor:pointer;white-space:nowrap}
+.qr:hover{color:var(--txt);border-color:var(--gold)}
+.chatwarn{margin:6px 12px 0;background:var(--amber-soft);color:var(--amber);font-size:11px;line-height:1.4;padding:8px 11px;border-radius:9px}
+.msgimg{max-width:200px;border-radius:9px;display:block;cursor:pointer;margin-top:2px}
+.msg .stt{font-size:9.5px;opacity:.85;margin-left:5px}
 .footbar{display:flex;justify-content:flex-end;padding:12px 0 16px;flex-shrink:0}
 .b-ghost{display:flex;align-items:center;gap:9px;background:var(--card);color:var(--txt);border:1px solid var(--line);font-weight:500;font-size:13.5px;padding:11px 20px;border-radius:12px;cursor:pointer;text-decoration:none}
 .b-ghost svg{width:16px;height:16px}
@@ -240,7 +247,9 @@ button,input,select{font-family:inherit}
             <div class="x" id="chClose"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
           </div>
           <div class="chatmsgs" id="chMsgs"></div>
+          <div class="chatwarn hidden" id="chWarn"></div>
           <div class="chatnote" id="chNote"></div>
+          <div class="qreplies" id="qreplies"></div>
           <div class="chatin"><button class="adj" onclick="document.getElementById('chFile').click()" title="Enviar imagen"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg></button><input type="file" id="chFile" accept="image/*" style="display:none" onchange="sendImg(this)"><input id="chInput" placeholder="Escribe una respuesta..." onkeydown="if(event.key==='Enter')sendMsg()"><button class="send" onclick="sendMsg()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button></div>
         </div>
       </div>
@@ -251,7 +260,7 @@ button,input,select{font-family:inherit}
       <div class="vbody">
         <div class="sec-title">Ventas por país <span class="h">cada país en su propia moneda</span></div>
         <div class="paises" id="paises"></div>
-        <div class="chartwrap"><div class="h"><span style="font-weight:500">Pedidos por día</span><span style="font-size:11.5px;color:var(--dim)">tendencia · por nº de pedidos</span></div><div class="legend" id="vlegend"></div><div style="position:relative;height:220px"><canvas id="chart" role="img" aria-label="Pedidos por dia"></canvas></div></div>
+        <div class="chartwrap"><div class="h"><span style="font-weight:500">Pedidos por día</span><span style="font-size:11.5px;color:var(--dim)">tendencia · por nº de pedidos</span></div><div class="legend" id="vlegend"></div><div style="position:relative;height:220px"><canvas id="chart" role="img" aria-label="Pedidos por día"></canvas></div></div>
         <div class="sec-title">Pedidos recientes</div>
         <div id="orders"></div>
       </div>
@@ -259,7 +268,7 @@ button,input,select{font-family:inherit}
     <div class="view hidden" id="v-rep">
       <div class="ph">
         <div class="repgrid">
-          <div class="repcard"><div class="rt">Conversión</div><div style="position:relative;width:100%;height:160px"><canvas id="rdona" role="img" aria-label="Dona de conversion 38%"></canvas><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none"><span id="repDonaTxt" style="font-size:28px;font-weight:600;color:var(--green)" class="disp">0%</span><span style="font-size:11px;color:var(--muted)">convierte</span></div></div><div style="font-size:11.5px;color:var(--dim);text-align:center;margin-top:8px">de las conversaciones del mes</div></div>
+          <div class="repcard"><div class="rt">Conversión</div><div style="position:relative;width:100%;height:160px"><canvas id="rdona" role="img" aria-label="Dona de conversión"></canvas><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none"><span id="repDonaTxt" style="font-size:28px;font-weight:600;color:var(--green)" class="disp">0%</span><span style="font-size:11px;color:var(--muted)">convierte</span></div></div><div style="font-size:11.5px;color:var(--dim);text-align:center;margin-top:8px">de las conversaciones del mes</div></div>
           <div class="repcard"><div class="rt">Rendimiento por bot</div><div style="position:relative;width:100%;height:130px"><canvas id="rbar" role="img" aria-label="Pedidos por bot"></canvas></div><div id="repTicket" style="font-size:11.5px;color:var(--dim);margin-top:10px;border-top:1px solid var(--line);padding-top:10px">Ticket promedio por bot</div></div>
         </div>
         <div class="repcard"><div class="rt">Ventas por zona</div><div id="ranking"></div></div>
@@ -270,8 +279,8 @@ button,input,select{font-family:inherit}
         <div class="sec-title">Apariencia</div>
         <div class="optrow"><div><div class="lt">Tema oscuro</div><div class="ls">Cambia entre fondo negro y fondo blanco</div></div><div class="switch on" id="cfgTheme"><div class="k"></div></div></div>
         <div class="sec-title" style="margin-top:6px">Notificaciones</div>
-        <div class="optrow"><div><div class="lt">Avisar nuevas ventas</div><div class="ls">Notificación cuando un bot cierra una venta</div></div><div class="switch on" onclick="this.classList.toggle('on')"><div class="k"></div></div></div>
-        <div class="optrow"><div><div class="lt">Avisar solicitudes de agente</div><div class="ls">Cuando un cliente pide hablar con una persona</div></div><div class="switch on" onclick="this.classList.toggle('on')"><div class="k"></div></div></div>
+        <div class="optrow"><div><div class="lt">Avisar nuevas ventas</div><div class="ls">Sonido y notificación cuando un bot cierra una venta</div></div><div class="switch on" id="cfgNotiVenta" onclick="this.classList.toggle('on')"><div class="k"></div></div></div>
+        <div class="optrow"><div><div class="lt">Avisar solicitudes de agente</div><div class="ls">Sonido y notificación cuando un cliente necesita una persona</div></div><div class="switch on" id="cfgNotiAgente" onclick="this.classList.toggle('on')"><div class="k"></div></div></div>
         <div class="sec-title" style="margin-top:6px">Datos y conexiones</div>
         <div class="optrow" style="cursor:pointer" onclick="verAjuste('hojas')"><div><div class="lt">Hojas de cálculo</div><div class="ls">Abre el reporte de ventas en Google Drive</div></div><span style="color:var(--gold)"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M7 17L17 7M9 7h8v8"/></svg></span></div>
         <div class="optrow" style="cursor:pointer" onclick="verAjuste('n8n')"><div><div class="lt">Conexiones n8n</div><div class="ls">Webhooks conectados al panel</div></div><span style="color:var(--muted)">›</span></div>
@@ -299,7 +308,9 @@ const URL_RESP=BASE+'/responder';
 const URL_IMG='https://web-production-a5adc.up.railway.app/api/jaye/enviar-imagen';
 const SHEET_URL='https://docs.google.com/spreadsheets/d/1rDuqvITCfj1cJlxZnOucd_lJn6BWnAzMG5ZW8LA7zvM/edit';
 
-let currentBot='todos',chartObj=null,dona=null,rbar=null,sel=-1;
+let currentBot='todos',chartObj=null,dona=null,rbar=null,sel=-1,selTel=null;
+const alertados=new Set(); let primeraCarga=true, convosCargadas=false, ventasCargadas=false, audioCtx=null, permPedida=false;
+const RESPUESTAS=['Sí, tenemos stock disponible.','¿Me confirmas tu dirección de entrega, por favor?','¿Para qué ciudad sería el envío?','El pago es contra entrega.','En un momento te confirmo y seguimos.','¡Gracias por tu compra! Ya estamos procesando tu pedido.'];
 const COL={Carlos:'#2dd4bf',Ramon:'#fb7185',James:'#fbbf24'};
 const FLAG={CL:`<svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="20" fill="#fff"/><rect width="30" height="10" y="10" fill="#D52B1E"/><rect width="10" height="10" fill="#0039A6"/><polygon points="5,2.2 5.9,4.2 8,4.2 6.3,5.5 6.9,7.6 5,6.3 3.1,7.6 3.7,5.5 2,4.2 4.1,4.2" fill="#fff"/></svg>`,PY:`<svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="6.67" fill="#D52B1E"/><rect width="30" height="6.67" y="6.67" fill="#fff"/><rect width="30" height="6.66" y="13.33" fill="#0038A8"/><circle cx="15" cy="10" r="2.4" fill="#fff" stroke="#0038A8" stroke-width=".4"/><circle cx="15" cy="10" r="1" fill="#2E7D32"/></svg>`,CO:`<svg viewBox="0 0 30 20" width="18" height="12" style="border-radius:2px;flex-shrink:0"><rect width="30" height="10" fill="#FCD116"/><rect width="30" height="5" y="10" fill="#003893"/><rect width="30" height="5" y="15" fill="#CE1126"/></svg>`};
 const WA=`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.9.9-2.8-.2-.3A8 8 0 1 1 12 20zm4.4-5.6c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.5.1-.6.8-.8 1-.3.2-.5 0a6.5 6.5 0 0 1-3.2-2.8c-.2-.4.2-.4.6-1.2 0-.2 0-.3 0-.5s-.5-1.3-.7-1.7-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3 1 2.6 1.1 2.8s1.9 2.9 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.4-.6 1.6-1.1s.2-1 .1-1.1-.2-.2-.4-.3z"/></svg>`;
@@ -321,8 +332,19 @@ function esHoy(f){if(!f)return false;const h=new Date();const p=String(f).split(
 function esMes(f){if(!f)return false;const h=new Date();const p=String(f).split(',')[0].trim().split(/[\/\-]/);return p.length>=3&&+p[1]===h.getMonth()+1&&+p[2]===h.getFullYear();}
 function diaDe(f){const p=String(f).split(',')[0].trim().split(/[\/\-]/);return +p[0]||0;}
 function ordenDe(fecha,hora){let f=0;if(fecha){const p=String(fecha).trim().split(/[\/\-]/);if(p.length>=3)f=+p[2]*10000+ +p[1]*100+ +p[0];}let min=0;if(hora){const h=String(hora).toLowerCase();const mm=h.match(/(\d{1,2}):(\d{2})/);if(mm){let hh=+mm[1];const mi=+mm[2];if(h.includes('p')&&hh<12)hh+=12;if(h.includes('a')&&hh===12)hh=0;min=hh*60+mi;}}return f*10000+min;}
+const now=()=>Date.now();
+function fechaMs(fecha,hora){if(!fecha)return 0;const p=String(fecha).split(',')[0].trim().split(/[\/\-]/);if(p.length<3)return 0;let hh=0,mi=0;if(hora){const h=String(hora).toLowerCase();const mm=h.match(/(\d{1,2}):(\d{2})/);if(mm){hh=+mm[1];mi=+mm[2];if(h.includes('p')&&hh<12)hh+=12;if(h.includes('a')&&hh===12)hh=0;}}return new Date(+p[2],+p[1]-1,+p[0],hh,mi).getTime();}
+// Respuestas rápidas
+function pintarRespuestas(){const cont=document.getElementById('qreplies');if(!cont)return;cont.innerHTML=RESPUESTAS.map((r,i)=>'<button class="qr" onclick="quickReply('+i+')">'+r+'</button>').join('');}
+function quickReply(i){const inp=document.getElementById('chInput');inp.value=RESPUESTAS[i];inp.focus();}
+// Ampliar imagen enviada
+function ampliarImg(el){document.getElementById('modalbox').innerHTML='<div style="padding:14px;text-align:center"><img src="'+el.src+'" style="max-width:100%;max-height:74vh;border-radius:12px;display:block;margin:0 auto"></div>';document.getElementById('modal').classList.remove('hidden');}
+// Sonido + notificación del navegador
+function beep(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.16,audioCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.45);o.start();o.stop(audioCtx.currentTime+.46);}catch(e){}}
+function avisar(n){beep();if('Notification' in window && Notification.permission==='granted'){try{new Notification(n.b,{body:n.s});}catch(e){}}}
+document.addEventListener('click',function(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();if(!permPedida&&'Notification' in window&&Notification.permission==='default'){permPedida=true;try{Notification.requestPermission();}catch(e){}}});
 
-const SECS={dash:{t:'Control de Bots',s:'Gestiona y monitorea todas tus conversaciones'},conv:{t:'Conversaciones',s:'Todas tus conversaciones en un solo lugar'},bots:{t:'Bots',s:'Estado de tus asistentes'},ventas:{t:'Ventas',s:'Resultados por pais y moneda'},rep:{t:'Reportes',s:'Analisis y metricas'},conf:{t:'Configuracion',s:'Ajustes de tu cuenta'}};
+const SECS={dash:{t:'Control de Bots',s:'Gestiona y monitorea todas tus conversaciones'},conv:{t:'Conversaciones',s:'Todas tus conversaciones en un solo lugar'},bots:{t:'Bots',s:'Estado de tus asistentes'},ventas:{t:'Ventas',s:'Resultados por país y moneda'},rep:{t:'Reportes',s:'Análisis y métricas'},conf:{t:'Configuración',s:'Ajustes de tu cuenta'}};
 function byBot(a){return currentBot==='todos'?a:a.filter(c=>c.bot===currentBot);}
 
 // ===== CONVERSACIONES =====
@@ -337,9 +359,27 @@ async function cargarConvos(){
  try{
   const res=await fetch(URL_CONV); const data=await res.json();
   const rows=Array.isArray(data)?data:(data.body||[]);
+  const previo={}; convos.forEach(c=>{previo[c.tel]={msgs:c.msgs,loaded:c.loaded};});
   convos=rows.filter(r=>r&&r.TELEFONO).map(normConv).sort((a,b)=>b.orden-a.orden);
-  render(); construirNoti();
- }catch(e){ document.getElementById('listcol').innerHTML='<div style="padding:40px;text-align:center;color:var(--red)">Error cargando conversaciones</div>'; }
+  // conservar el historial ya cargado entre refrescos
+  convos.forEach(c=>{const p=previo[c.tel]; if(p&&p.loaded){c.msgs=p.msgs;c.loaded=true;}});
+  // mantener seleccionada la misma conversación por teléfono
+  sel=selTel?convos.findIndex(c=>c.tel===selTel):-1;
+  convosCargadas=true;
+  render(); construirNoti(); refrescarChatAbierto();
+ }catch(e){ convosCargadas=true; document.getElementById('listcol').innerHTML='<div style="padding:40px;text-align:center;color:var(--red)">Error cargando conversaciones</div>'; }
+}
+// Refresca SOLO el historial del chat abierto (mejora: ver mensajes nuevos sin cerrar el chat)
+async function refrescarChatAbierto(){
+ if(sel<0)return; const c=convos[sel]; if(!c)return;
+ try{
+  const res=await fetch(URL_HIST+'?telefono='+soloNum(c.tel)+'&pais='+c.loc);
+  const data=await res.json();
+  const arr=Array.isArray(data)?data:(data?[data]:[]);
+  const row=arr.find(r=>r&&soloNum(r.telefono)===soloNum(c.tel))||arr[0];
+  const nuevos=parseHist(row&&row.historial);
+  if(nuevos.length>c.msgs.length){ c.msgs=nuevos; c.loaded=true; if(sel>=0&&convos[sel]===c) renderBubbles(c); }
+ }catch(e){}
 }
 function kpis(){
  const base=byBot(convos);
@@ -381,12 +421,18 @@ function parseHist(txt){
  return out;
 }
 async function openChat(i){
- sel=i; const c=convos[i], col=COL[c.bot];
+ sel=i; selTel=convos[i].tel; const c=convos[i], col=COL[c.bot];
  document.getElementById('chat').classList.remove('hidden');
  const av=document.getElementById('chAv'); av.textContent=ini(c.n);
  document.getElementById('chName').textContent=c.n;
  document.getElementById('chSt').innerHTML=FLAG[c.loc]+' '+c.tel+' · '+(c.estado==='activa'?'Bot activo':'En pausa · atiende agente');
- document.getElementById('chNote').textContent=c.estado==='activa'?'Al responder, el bot se pausa automaticamente para esta conversacion.':'Estas atendiendo esta conversacion (bot en pausa).';
+ document.getElementById('chNote').textContent=c.estado==='activa'?'Al responder, el bot se pausa automáticamente para esta conversación.':'Estás atendiendo esta conversación (bot en pausa).';
+ // Aviso de la ventana de 24h de WhatsApp
+ const w=document.getElementById('chWarn');
+ const ult=fechaMs(c.fecha,c.hora);
+ if(ult && (now()-ult)>86400000){ w.classList.remove('hidden'); w.innerHTML='⚠ Pasaron más de 24 horas desde el último mensaje. WhatsApp puede no entregar mensajes libres; quizás necesites una plantilla.'; }
+ else w.classList.add('hidden');
+ pintarRespuestas();
  const mh=document.getElementById('chMsgs');
  render();
  if(!c.loaded){
@@ -404,23 +450,34 @@ async function openChat(i){
 function renderBubbles(c){
  const mh=document.getElementById('chMsgs');
  if(!c.msgs.length){ mh.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;margin:auto">Sin mensajes todavía</div>'; return; }
- mh.innerHTML=c.msgs.map(m=>'<div class="msg '+m.from+'">'+(m.from!=='cliente'?'<span class="tag">'+(m.from==='agente'?'Tu':'Bot')+'</span>':'')+m.text+(m.time?'<span class="mt">'+m.time+'</span>':'')+'</div>').join('');
+ mh.innerHTML=c.msgs.map(m=>{
+  const tag=(m.from!=='cliente')?'<span class="tag">'+(m.from==='agente'?'Tú':'Bot')+'</span>':'';
+  const cuerpo=m.img?'<img class="msgimg" src="'+m.img+'" onclick="ampliarImg(this)">':m.text;
+  let st='';
+  if(m.from==='agente'&&m.st){st='<span class="stt">'+(m.st==='send'?'· enviando…':m.st==='err'?'· no enviado':'· enviado')+'</span>';}
+  const mt=(m.time||st)?'<span class="mt">'+(m.time||'')+st+'</span>':'';
+  return '<div class="msg '+m.from+'">'+tag+cuerpo+mt+'</div>';
+ }).join('');
  mh.scrollTop=mh.scrollHeight;
 }
-document.getElementById('chClose').onclick=function(){document.getElementById('chat').classList.add('hidden');sel=-1;render();};
+document.getElementById('chClose').onclick=function(){document.getElementById('chat').classList.add('hidden');sel=-1;selTel=null;render();};
 
 async function sendMsg(){
  if(sel<0)return; const inp=document.getElementById('chInput'),t=inp.value.trim(); if(!t)return;
  const c=convos[sel];
- const now=new Date(),hh=now.getHours()%12||12,mm=String(now.getMinutes()).padStart(2,'0');
- c.msgs.push({from:'agente',text:t,time:hh+':'+mm}); c.estado='pausada'; inp.value=''; renderBubbles(c);
+ const d=new Date(),hh=d.getHours()%12||12,mm=String(d.getMinutes()).padStart(2,'0');
+ const m={from:'agente',text:t,time:hh+':'+mm,st:'send'};
+ c.msgs.push(m); c.estado='pausada'; inp.value=''; renderBubbles(c);
  document.getElementById('chSt').innerHTML=FLAG[c.loc]+' '+c.tel+' · En pausa · atiende agente';
- document.getElementById('chNote').textContent='Estas atendiendo esta conversacion (bot en pausa).';
+ document.getElementById('chNote').textContent='Estás atendiendo esta conversación (bot en pausa).';
  render();
  try{
-  await fetch(URL_RESP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),mensaje:t,pais:c.loc})});
+  const r=await fetch(URL_RESP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),mensaje:t,pais:c.loc})});
+  if(!r.ok) throw new Error('resp');
   await fetch(URL_PAUSA,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),modo:'agente'})});
- }catch(e){ alert('No se pudo enviar el mensaje. Revisa la conexión.'); }
+  m.st='ok';
+ }catch(e){ m.st='err'; }
+ if(sel>=0&&convos[sel]===c) renderBubbles(c);
 }
 async function sendImg(input){
  if(sel<0)return; const f=input.files&&input.files[0]; input.value=''; if(!f)return;
@@ -431,13 +488,16 @@ async function sendImg(input){
    if(w>max||h>max){ if(w>=h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;} }
    const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
    const dataUrl=cv.toDataURL('image/jpeg',0.82);
-   const now=new Date(),hh=now.getHours()%12||12,mm=String(now.getMinutes()).padStart(2,'0');
-   c.msgs.push({from:'agente',text:'📷 Foto enviada',time:hh+':'+mm}); c.estado='pausada'; renderBubbles(c); render();
+   const d=new Date(),hh=d.getHours()%12||12,mm=String(d.getMinutes()).padStart(2,'0');
+   const m={from:'agente',img:dataUrl,text:'',time:hh+':'+mm,st:'send'};
+   c.msgs.push(m); c.estado='pausada'; renderBubbles(c); render();
    try{
     const r=await fetch(URL_IMG,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pais:c.loc,telefono:soloNum(c.tel),imagen:dataUrl,caption:''})});
     if(!r.ok) throw new Error('img');
     await fetch(URL_PAUSA,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telefono:soloNum(c.tel),modo:'agente'})});
-   }catch(e){ alert('No se pudo enviar la imagen. Revisa la conexión.'); }
+    m.st='ok';
+   }catch(e){ m.st='err'; }
+   if(sel>=0&&convos[sel]===c) renderBubbles(c);
   }; img.src=rd.result;
  }; rd.readAsDataURL(f);
 }
@@ -466,8 +526,9 @@ async function cargarVentas(){
   prodCL=cl.reduce((a,b)=>a+b.cant,0); prodPY=py.reduce((a,b)=>a+b.cant,0); prodCO=co.reduce((a,b)=>a+b.cant,0);
   if(!document.getElementById('v-ventas').classList.contains('hidden')){ ventas(); redrawCharts(); }
   if(!document.getElementById('v-rep').classList.contains('hidden')){ ranking(); redrawCharts(); }
+  ventasCargadas=true;
   construirNoti();
- }catch(e){ /* silencioso */ }
+ }catch(e){ ventasCargadas=true; }
 }
 function vkpisRender(){
  const sCL=currentBot==='todos'||currentBot==='Carlos', sPY=currentBot==='todos'||currentBot==='Ramon', sCO=currentBot==='todos'||currentBot==='James';
@@ -496,7 +557,7 @@ function ventas(){
 }
 function verOrden(i){
  const o=ordenes[i];
- document.getElementById('modalbox').innerHTML='<div class="mhead"><div class="obox" style="width:46px;height:46px"><svg viewBox="0 0 24 24"><path d="M20 7L12 3 4 7v10l8 4 8-4z"/><path d="M4 7l8 4 8-4"/></svg></div><div><div style="font-size:16px;font-weight:600" class="disp">'+o.cli+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:6px">'+FLAG[o.loc]+botName(o.bot)+' · '+o.estado+'</div></div><div class="x" onclick="cerrarModal()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div></div><div class="mbody">'+drow('Telefono',o.tel)+drow('Producto',o.prod)+drow('Cantidad',o.cant)+drow('Precio',o.precio)+drow('Direccion',o.dir)+drow(o.loc==='CL'?'Comuna':'Ciudad',o.zona)+drow(o.loc==='CL'?'Region':'Departamento',o.region)+drow('Bot',botName(o.bot))+drow('Estado',o.estado)+drow('Fecha',o.fecha)+'<a class="b-ghost" style="margin-top:14px;justify-content:center;color:var(--wa);border-color:rgba(37,211,102,.3)" href="https://wa.me/'+soloNum(o.tel)+'" target="_blank"><span style="width:17px;height:17px;display:inline-block">'+WA+'</span>Escribir por WhatsApp</a></div>';
+ document.getElementById('modalbox').innerHTML='<div class="mhead"><div class="obox" style="width:46px;height:46px"><svg viewBox="0 0 24 24"><path d="M20 7L12 3 4 7v10l8 4 8-4z"/><path d="M4 7l8 4 8-4"/></svg></div><div><div style="font-size:16px;font-weight:600" class="disp">'+o.cli+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:6px">'+FLAG[o.loc]+botName(o.bot)+' · '+o.estado+'</div></div><div class="x" onclick="cerrarModal()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></div></div><div class="mbody">'+drow('Teléfono',o.tel)+drow('Producto',o.prod)+drow('Cantidad',o.cant)+drow('Precio',o.precio)+drow('Dirección',o.dir)+drow(o.loc==='CL'?'Comuna':'Ciudad',o.zona)+drow(o.loc==='CL'?'Región':'Departamento',o.region)+drow('Bot',botName(o.bot))+drow('Estado',o.estado)+drow('Fecha',o.fecha)+'<a class="b-ghost" style="margin-top:14px;justify-content:center;color:var(--wa);border-color:rgba(37,211,102,.3)" href="https://wa.me/'+soloNum(o.tel)+'" target="_blank"><span style="width:17px;height:17px;display:inline-block">'+WA+'</span>Escribir por WhatsApp</a></div>';
  document.getElementById('modal').classList.remove('hidden');
 }
 function drow(k,v){return '<div class="drow"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';}
@@ -547,6 +608,16 @@ function construirNoti(){
  const arr=[];
  ordenes.filter(o=>esHoy(o.fecha)).forEach(o=>arr.push({id:'v:'+o.tel+':'+o.fecha,tipo:'venta',b:'Nueva venta',s:botName(o.bot)+' · '+o.precio+' · '+o.zona}));
  convos.filter(c=>c.estado==='pausada').forEach(c=>arr.push({id:'a:'+c.tel,tipo:'agente',b:'Atención de agente',s:c.n+' — '+(c.ultimo||'esperando')}));
+ // Avisar (sonido + notificación) solo de avisos NUEVOS, no en la primera carga
+ const tv=document.getElementById('cfgNotiVenta'), ta=document.getElementById('cfgNotiAgente');
+ const onV=!tv||tv.classList.contains('on'), onA=!ta||ta.classList.contains('on');
+ arr.forEach(n=>{
+  if(alertados.has(n.id)||dismissed.has(n.id))return;
+  alertados.add(n.id);
+  if(primeraCarga)return;
+  if((n.tipo==='venta'&&onV)||(n.tipo==='agente'&&onA)) avisar(n);
+ });
+ if(convosCargadas&&ventasCargadas)primeraCarga=false;
  notis=arr; renderNoti();
 }
 function renderNoti(){
@@ -592,7 +663,7 @@ document.querySelectorAll('#nav button').forEach(function(b){b.onclick=function(
 };});
 document.querySelectorAll('#botsel button').forEach(function(b){b.onclick=function(){
  document.querySelectorAll('#botsel button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
- currentBot=b.dataset.bot;document.getElementById('chat').classList.add('hidden');sel=-1;
+ currentBot=b.dataset.bot;document.getElementById('chat').classList.add('hidden');sel=-1;selTel=null;
  const tn=document.getElementById('topName'),ta=document.getElementById('topAv'),tf=document.getElementById('topFlag');
  if(currentBot==='todos'){tn.textContent='Todos';ta.textContent='J';ta.style.background='var(--gold)';tf.innerHTML='';}
  else{tn.textContent=botName(currentBot);ta.textContent=botName(currentBot)[0];ta.style.background=COL[currentBot];tf.innerHTML=FLAG[BOTLOC[currentBot]];}
@@ -602,7 +673,7 @@ document.querySelectorAll('#botsel button').forEach(function(b){b.onclick=functi
  redrawCharts();
 };});
 function exportar(){
- const rows=byBot(convos);let csv='Nombre,Telefono,Bot,Pais,Estado,Ultimo\n';
+ const rows=byBot(convos);let csv='Nombre,Teléfono,Bot,País,Estado,Último\n';
  rows.forEach(c=>csv+='"'+c.n+'","'+c.tel+'","'+botName(c.bot)+'","'+c.loc+'","'+c.estado+'","'+String(c.ultimo||'').replace(/"/g,'')+'"\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='reporte-jaye.csv';a.click();
 }
